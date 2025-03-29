@@ -21,3 +21,13 @@ have you information leaked.
 Focused on giving the security back to you, we run a local server that
 encrypts all your passwords into a file that can only be decrypted by
 your user.
+
+### Screenshots
+
+**Homepage**
+
+![Homepage](./src/public/images/readme/homepage.png)
+
+**Login page**
+
+![Login](./src/public/images/readme/loginpage.png)
