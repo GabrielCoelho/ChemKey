@@ -11,7 +11,7 @@ Follow up to see the full development of the project.
 
 ## About ChemKey
 
-![./public/logo.png](./public/logo.png)
+![./public/images/logo.png](./public/images/logo.png)
 
 ChemKey is proposed to be a CLI application to run a local server that
 gives you the full power of your password, cards and address information
