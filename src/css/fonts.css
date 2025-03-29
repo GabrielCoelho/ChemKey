@@ -1,0 +1,15 @@
+@font-face {
+  font-family: Oganesson;
+  src: url(../fonts/Oganesson.ttf);
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Axeon;
+  src: url(../fonts/AxeonRegular.otf);
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
