@@ -15,18 +15,8 @@
   </head>
   <body>
     <header id="home">
-      <nav class="navbar bg-body-tertiary navbar-expand-md">
+      <nav class="navbar navbar-expand-md">
         <div class="container-fluid">
-          <a class="navbar-brand" href="#home">
-            <img
-              src="./src/public/images/logo.png"
-              alt="Logo"
-              width="24"
-              height="24"
-              class="d-inline-block align-text-top"
-            />
-            ChemKey
-          </a>
           <button
             class="navbar-toggler"
             type="button"
@@ -38,7 +28,14 @@
           >
             <span class="navbar-toggler-icon"></span>
           </button>
-          <div class="collapse navbar-collapse" id="navbarNav">
+          <div
+            class="collapse navbar-collapse justify-content-center"
+            id="navbarNav"
+          >
+            <a class="navbar-brand justify-content-center" href="#home">
+              ChemKey
+            </a>
+
             <ul class="navbar-nav">
               <li class="nav-item">
                 <a class="nav-link" href="#home">Home</a>
@@ -59,7 +56,25 @@
           </div>
         </div>
       </nav>
+      <div class="container text-center mt-5">
+        <div class="row">
+          <div class="col">
+            <h1>Your data in your hands</h1>
+            <p>
+              A private password manager that keeps your digital keys secure and
+              local.
+            </p>
+            <img
+              src="src/public/images/logo.png"
+              alt="Logo ChemKey"
+              class="img-fluid rounded mx-auto d-block"
+            />
+          </div>
+        </div>
+      </div>
     </header>
+
+    <main></main>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
