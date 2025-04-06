@@ -10,6 +10,10 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"
+    />
     <link href="./src/css/fonts.css" rel="stylesheet" />
     <link href="./src/css/style.css" rel="stylesheet" />
   </head>
@@ -32,7 +36,7 @@
             class="collapse navbar-collapse justify-content-center"
             id="navbarNav"
           >
-            <a class="navbar-brand justify-content-center" href="#home">
+            <a class="navbar-brand fs-4 justify-content-center" href="#home">
               ChemKey
             </a>
 
@@ -41,16 +45,16 @@
                 <a class="nav-link" href="#home">Home</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#">Features</a>
+                <a class="nav-link" href="#features">Features</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#">Pricing</a>
+                <a class="nav-link" href="#pricing">Pricing</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="#">About Us</a>
+                <a class="nav-link" href="#about">About Us</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="login.html">Login</a>
+                <a class="nav-link" href="./login.html">Login</a>
               </li>
             </ul>
           </div>
@@ -75,77 +79,455 @@
     </header>
 
     <main>
-      <div id="features" class="container text-center">
-        <div id="featuresCards" class="row gx-3">
-          <div class="card col-4 col-6-xs p-3">
-            <section class="card-body">
-              <h2 class="card-title">Military-grade Encryption</h2>
-              <p class="card-text">
-                Your sensitive data deserves the strongest protection. ChemKey
-                employs AES-256 encryption, the same standard trusted by
-                governments and security experts worldwide.
-              </p>
-            </section>
+      <section class="section-services" id="features">
+        <div class="container">
+          <div class="row justify-content-center text-center">
+            <div class="col-md-10 col-lg-8">
+              <div class="header-section">
+                <h2 class="title">Our <span>Features</span></h2>
+                <p class="description">
+                  Powerful tools to protect your passwords with science-grade
+                  precision and control.
+                </p>
+              </div>
+            </div>
           </div>
-          <div class="card col-4 col-6-xs p-3">
-            <section class="card-body">
-              <h2 class="card-title">Password Generator</h2>
-              <p class="card-text">
-                Say goodbye to weak, predictable passwords. ChemKey's built-in
-                password generator allows you to customize length, include
-                symbols, numbers, or create pronounceable options that balance
-                security with memorability—all while ensuring each password is
-                as unique as a molecular formula.
-              </p>
-            </section>
-          </div>
-          <div class="card col-4 col-6-xs p-3">
-            <section class="card-body">
-              <h2 class="card-title">Local Storage Architecture</h2>
-              <p class="card-text">
-                Unlike cloud-based alternatives, ChemKey keeps your password
-                vault exclusively on your device. This fundamental design choice
-                eliminates server breaches, man-in-the-middle attacks, and
-                unwanted access by third parties. Your data truly remains in
-                your hands, accessible even without an internet connection,
-                giving you complete control of your digital identity.
-              </p>
-            </section>
-          </div>
-          <div class="card col-6 col-12-xs p-3">
-            <section class="card-body">
-              <h2 class="card-title">Password Health Analysis</h2>
-              <p class="card-text">
-                ChemKey acts as your digital security lab, automatically
-                identifying vulnerabilities in your password collection. The
-                password health dashboard highlights duplicates, aging
-                passwords, and those that don't meet modern security standards.
-                Receive personalized recommendations to strengthen your overall
-                security posture and protect against evolving threats.
-              </p>
-            </section>
-          </div>
-          <div class="card col-6 col-12-xs p-3">
-            <section class="card-body">
-              <h2 class="card-title">Secure Password Sharing</h2>
-              <p class="card-text">
-                Sometimes you need to share access without compromising
-                security. ChemKey's encrypted sharing feature lets you
-                temporarily grant access to specific credentials without
-                revealing the actual password. Control exactly how long the
-                shared access lasts and revoke it at any time, maintaining the
-                perfect balance between collaboration and security.
-              </p>
-            </section>
+          <div class="row">
+            <!-- Start Single Service -->
+            <div class="col-xs-12 col-md-6 col-lg-4">
+              <div class="single-service mh-100">
+                <div class="part-1 text-center">
+                  <i>󰲉</i>
+                  <h3 class="title">Military-grade Encryption</h3>
+                </div>
+                <div class="part-2">
+                  <p class="description fs-6">
+                    Your sensitive data deserves the strongest protection.
+                    ChemKey employs AES-256 encryption, the same standard
+                    trusted by governments and security experts worldwide. Your
+                    password vault is secured with a mathematical formula
+                    applied to Chemical knowledge so complex that it would take
+                    billions of years to crack with current technology, ensuring
+                    your digital keys remain truly private.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- / End Single Service -->
+            <!-- Start Single Service -->
+            <div class="col-xs-12 col-md-6 col-lg-4">
+              <div class="single-service mh-100">
+                <div class="part-1 text-center">
+                  <i></i>
+                  <h3 class="title">Password Generator</h3>
+                </div>
+                <div class="part-2">
+                  <p class="description fs-6">
+                    Say goodbye to weak, predictable passwords. ChemKey's
+                    built-in password generator creates unique, complex
+                    combinations of characters following the latest security
+                    recommendations. Customize length, include symbols, numbers,
+                    or create pronounceable options that balance security with
+                    memorability—all while ensuring each password is as unique
+                    as a molecular formula.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- / End Single Service -->
+            <!-- Start Single Service -->
+            <div class="col-xs-12 col-md-6 col-lg-4">
+              <div class="single-service mh-100">
+                <div class="part-1 text-center">
+                  <i></i>
+                  <h3 class="title">Local Storage Architecture</h3>
+                </div>
+                <div class="part-2">
+                  <p class="description fs-6">
+                    Unlike cloud-based alternatives, ChemKey keeps your password
+                    vault exclusively on your device. This fundamental design
+                    choice eliminates server breaches, man-in-the-middle
+                    attacks, and unwanted access by third parties. Your data
+                    truly remains in your hands, accessible even without an
+                    internet connection, giving you complete control of your
+                    digital identity, address, cards and passwords.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- / End Single Service -->
+            <!-- Start Single Service -->
+            <div class="col-xs-12 col-md-6">
+              <div class="single-service mh-100">
+                <div class="part-1 text-center">
+                  <i></i>
+                  <h3 class="title">Password Health Analysis</h3>
+                </div>
+                <div class="part-2">
+                  <p class="description fs-6">
+                    ChemKey acts as your digital security lab, automatically
+                    identifying vulnerabilities in your password collection. The
+                    password health dashboard highlights duplicates, aging
+                    passwords, and those that don't meet modern security
+                    standards. Receive personalized recommendations to
+                    strengthen your overall security posture and protect against
+                    evolving threats.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- / End Single Service -->
+            <!-- Start Single Service -->
+            <div class="col-xs-12 col-md-12 col-lg-6">
+              <div class="single-service mh-100">
+                <div class="part-1 text-center">
+                  <i>󰯄</i>
+                  <h3 class="title">Secure Password Sharing</h3>
+                </div>
+                <div class="part-2">
+                  <p class="description fs-6">
+                    Sometimes you need to share access without compromising
+                    security. ChemKey's encrypted sharing feature lets you
+                    temporarily grant access to specific credentials without
+                    revealing the actual password. Control exactly how long the
+                    shared access lasts and revoke it at any time, maintaining
+                    the perfect balance between collaboration and security.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- / End Single Service -->
           </div>
         </div>
-      </div>
+      </section>
+
+      <section id="pricing" class="py-5">
+        <div class="container">
+          <div class="row justify-content-center text-center">
+            <div class="col-md-10 col-lg-8">
+              <div class="header-section">
+                <h2 class="title">The <span>Pricing</span></h2>
+                <p class="description">
+                  ChemKey is and will always be free. We believe in digital
+                  security for everyone.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+              <div class="card border-0 shadow-lg">
+                <div class="card-body p-5 text-center">
+                  <h3 class="card-title mb-4 fw-bold arimo-head">
+                    <s>US$ 0.00</s> Free Forever
+                  </h3>
+                  <p class="card-text mb-4">
+                    ChemKey is completely free, open-source software with no
+                    hidden costs, no premium features, and no subscription
+                    plans.
+                  </p>
+
+                  <div class="d-flex justify-content-center mb-4">
+                    <ul class="list-unstyled text-start">
+                      <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"
+                          ></i
+                        >
+                        All features included
+                      </li>
+                      <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"
+                          ></i
+                        >
+                        No ads or tracking
+                      </li>
+                      <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"
+                          ></i
+                        >
+                        No data collection
+                      </li>
+                      <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"
+                          ></i
+                        >
+                        Full local control
+                      </li>
+                      <li class="mb-2">
+                        <i class="bi bi-check-circle-fill text-success me-2"
+                          ></i
+                        >
+                        Regular updates
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-5 text-center">
+            <div class="col-12">
+              <h3 class="mb-4">Support the Project</h3>
+              <p class="mb-4">
+                While ChemKey will always remain free, you can support our
+                development efforts if you find it valuable:
+              </p>
+            </div>
+          </div>
+
+          <div class="row justify-content-center text-center g-4">
+            <div class="col-md-5">
+              <div class="card border-0 shadow h-100">
+                <div class="card-body p-4">
+                  <i class="arimo fs-1 mb-3"></i>
+                  <h4 class="card-title">Contribute on GitHub</h4>
+                  <p class="card-text">
+                    Help improve ChemKey by contributing code, reporting bugs,
+                    or suggesting new features.
+                  </p>
+                  <a
+                    href="https://github.com/GabrielCoelho/ChemKey"
+                    class="btn btn-outline-dark mt-3"
+                  >
+                    <i class="me-2"></i>Visit Repository
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-5">
+              <div class="card border-0 shadow h-100">
+                <div class="card-body p-4">
+                  <i class="arimo fs-1 mb-3"></i>
+                  <h4 class="card-title">Buy Us a Coffee</h4>
+                  <p class="card-text">
+                    Support our development team with a one-time donation on
+                    Ko-fi to fuel our coding sessions.
+                  </p>
+                  <a href="#" class="btn btn-primary mt-3">
+                    <i class="me-2"></i>Support on Ko-fi
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row mt-5">
+            <div class="col-12 text-center">
+              <p class="text-muted">
+                Your support helps us maintain and improve ChemKey, but is
+                completely optional.
+              </p>
+              <p class="text-muted">
+                We're committed to keeping your digital keys secure, regardless
+                of contribution.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="about" class="py-5 arimo">
+        <div class="container">
+          <!-- About Us Header -->
+          <div class="row justify-content-center text-center">
+            <div class="col-md-10 col-lg-8">
+              <div class="header-section">
+                <h2 class="title">About <span>Us</span></h2>
+                <p class="description">
+                  The team behind ChemKey and our mission to keep your digital
+                  identity secure.
+                </p>
+              </div>
+            </div>
+          </div>
+          <!-- About Content -->
+          <div class="row align-items-center mb-5">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+              <img
+                src="./src/public/images/team.png"
+                alt="ChemKey Team"
+                class="img-fluid rounded shadow-lg"
+              />
+            </div>
+            <div class="col-lg-6">
+              <h3 class="fw-bold mb-3 arimo-head">Our Story</h3>
+              <p>
+                ChemKey was born from a simple observation:
+                <strong
+                  >password security shouldn't depend on trusting third parties
+                  with your most sensitive information.</strong
+                >
+              </p>
+              <p>
+                Started by a group of security-minded developers and
+                cryptography enthusiasts, we set out to create a password
+                manager that put control back in users' hands. Inspired by the
+                precision and reliability of chemistry, we named our project
+                ChemKey — where your digital keys are handled with scientific
+                accuracy.
+              </p>
+              <p>
+                Today, we're proud to offer a completely free, open-source
+                solution that never compromises on security or privacy. Our
+                mission is to make robust security accessible to everyone,
+                regardless of technical background or financial resources.
+              </p>
+            </div>
+          </div>
+
+          <!-- Values Section -->
+          <div class="row mb-5">
+            <div class="col-md-4 mb-4 mb-md-0">
+              <div class="card border-0 shadow h-100">
+                <div class="card-body p-4 text-center">
+                  <i class="bi bi-shield-lock fs-1 text-primary mb-3"></i>
+                  <h4 class="fw-bold oganesson">Privacy First</h4>
+                  <p>
+                    We believe your passwords should never leave your device
+                    without your explicit consent. All encryption happens
+                    locally, ensuring your data remains yours alone.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 mb-4 mb-md-0">
+              <div class="card border-0 shadow h-100">
+                <div class="card-body p-4 text-center">
+                  <i class="bi bi-code-square fs-1 text-primary mb-3"></i>
+                  <h4 class="fw-bold oganesson">Open Source</h4>
+                  <p>
+                    Our code is completely transparent and available for review.
+                    We believe security through obscurity is no security at all.
+                    Trust should be verified, not just given.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="card border-0 shadow h-100">
+                <div class="card-body p-4 text-center">
+                  <i class="bi bi-people fs-1 text-primary mb-3"></i>
+                  <h4 class="fw-bold oganesson">Community Driven</h4>
+                  <p>
+                    ChemKey grows through community contributions and feedback.
+                    Our users are our collaborators in building a more secure
+                    digital world.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Form Section -->
+          <div class="row mt-5">
+            <div class="col-lg-8 mx-auto">
+              <div class="card border-0 shadow">
+                <div class="card-body p-5">
+                  <h3 class="text-center mb-4">Get in Touch</h3>
+                  <p class="text-center mb-4">
+                    Have questions or suggestions about ChemKey? We'd love to
+                    hear from you.
+                  </p>
+
+                  <form id="contact-form">
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label for="name" class="form-label">Name</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="name"
+                          required
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label for="email" class="form-label">Email</label>
+                        <input
+                          type="email"
+                          class="form-control"
+                          id="email"
+                          required
+                        />
+                      </div>
+                      <div class="col-md-6">
+                        <label for="cpf" class="form-label">CPF</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="cpf"
+                          placeholder="000.000.000-00"
+                        />
+                        <div class="form-text">
+                          Brazilian ID required for local support.
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label for="subject" class="form-label">Subject</label>
+                        <select class="form-select" id="subject" required>
+                          <option value="" selected disabled>
+                            Please select
+                          </option>
+                          <option value="support">Technical Support</option>
+                          <option value="feature">Feature Request</option>
+                          <option value="security">Security Concern</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                      <div class="col-12">
+                        <label for="message" class="form-label">Message</label>
+                        <textarea
+                          class="form-control"
+                          id="message"
+                          rows="5"
+                          required
+                        ></textarea>
+                      </div>
+                      <div class="col-12">
+                        <div class="form-check">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="privacy-policy"
+                            required
+                          />
+                          <label class="form-check-label" for="privacy-policy">
+                            I agree to the <a href="#">privacy policy</a> and
+                            consent to the processing of my data.
+                          </label>
+                        </div>
+                      </div>
+                      <div class="col-12 text-center mt-4">
+                        <button type="submit" class="btn btn-primary px-4 py-2">
+                          Send Message
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
+
+    <!-- Button to top-->
+    <button
+      class="btn btn-sm btn-secondary rounded-circle position-fixed bottom-0 end-0 translate-middle d-none"
+      onclick="scrollToTop()"
+      id="back-to-up"
+    >
+      <i class="fs-4 arimo" aria-hidden="true"> 󱥒 </i>
+    </button>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
+    <script src="./src/js/btu.js"></script>
   </body>
 </html>

@@ -13,3 +13,27 @@
   font-style: normal;
   font-display: swap;
 }
+
+@font-face {
+  font-family: Iosevka;
+  src: url(../fonts/Iosevka.ttf);
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Arimo;
+  src: url(../fonts/Arimoreg.ttf);
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Arimo-head;
+  src: url(../fonts/Arimohead.ttf);
+  font-weight: bold;
+  font-style: italic;
+  font-display: swap;
+}
