@@ -21,10 +21,13 @@ document.addEventListener("DOMContentLoaded", function () {
       // Mostra mensagem de sucesso
       showMessage("Login realizado com sucesso!", "success");
 
-      // Simula um redirecionamento (descomente e substitua pela URL real de destino)
+      // Set session storage for the app to recognize the login
+      sessionStorage.setItem("loggedIn", "true");
+      sessionStorage.setItem("username", userInput);
+
+      // Redirect after a short delay
       setTimeout(function () {
-        window.location.href = "app.html";
-        alert("Redirecionando para a página principal...");
+        window.location.href = "app.html?login=success";
       }, 1500);
     } else {
       // Mostra mensagem de erro
