@@ -39,18 +39,6 @@ Follow up to see the full development of the project.
 
 ![Homepage](./src/public/images/readme/homepage.png)
 
-**Features**
-
-![Features](./src/public/images/readme/homepage-features.png)
-
-**Pricing**
-
-![Pricing](./src/public/images/readme/homepage-pricing.png)
-
-**About us**
-
-![About us](./src/public/images/readme/homepage-about.png)
-
 **Login page**
 
 ![Login](./src/public/images/readme/loginpage.png)
