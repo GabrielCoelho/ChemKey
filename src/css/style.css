@@ -56,6 +56,10 @@ nav .nav-link:hover,
   max-height: 25vh;
 }
 
+i {
+  font-style: normal;
+}
+
 .section-services {
   padding-top: 110px;
   padding-bottom: 120px;
