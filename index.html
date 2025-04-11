@@ -22,49 +22,49 @@
     <link href="./src/css/style.css" rel="stylesheet" />
   </head>
   <body>
-    <header id="home" role="banner">
-      <nav class="navbar navbar-expand-md" role="navigation">
-        <div class="container-fluid">
-          <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarNav"
-            aria-controls="navbarNav"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span class="navbar-toggler-icon"></span>
-          </button>
-          <div
-            class="collapse navbar-collapse justify-content-center"
-            id="navbarNav"
-          >
-            <a class="navbar-brand fs-4 justify-content-center" href="#home">
-              ChemKey
-            </a>
-
-            <ul class="navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link" href="#home">Home</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#features">Features</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#pricing">Pricing</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#about">About Us</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="./login.html">Login</a>
-              </li>
-            </ul>
-          </div>
+    <nav
+      class="navbar sticky-top navbar-expand-md bg-nav-chem"
+      role="navigation"
+    >
+      <div class="container-md">
+        <a class="navbar-brand fs-4" href="#home"> ChemKey </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div
+          class="collapse navbar-collapse justify-content-between"
+          id="navbarNav"
+        >
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="#home">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#features">Features</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#pricing">Pricing</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#about">About Us</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./login.html">Login</a>
+            </li>
+          </ul>
         </div>
-      </nav>
-      <div class="container text-center mt-5">
+      </div>
+    </nav>
+    <header id="home" role="banner">
+      <div class="container text-center pt-5">
         <div class="row gx-3">
           <div class="col">
             <h1>Your data in your hands</h1>
@@ -585,16 +585,6 @@
       </div>
     </main>
 
-    <!-- Button to top-->
-    <button
-      class="btn btn-sm btn-secondary rounded-circle position-fixed bottom-0 end-0 translate-middle d-none"
-      onclick="scrollToTop()"
-      id="back-to-up"
-      aria-label="Back to top"
-    >
-      <i class="fs-4 arimo" aria-hidden="true"> 󱥒 </i>
-    </button>
-
     <footer class="bg-dark text-white pt-5 pb-4" role="contentinfo">
       <div class="container">
         <div class="row">
@@ -686,7 +676,6 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
-    <script src="./src/js/btu.js"></script>
     <script src="./src/js/valida_cpf.js"></script>
     <script src="./src/js/form_submit.js"></script>
   </body>

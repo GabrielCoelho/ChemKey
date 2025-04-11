@@ -1,5 +1,5 @@
 body {
-  background: url("../public/images/header.png") no-repeat !important;
+  background: #83a598a9 url("../public/images/header.png") no-repeat !important;
   color: #282828;
   font-family: Iosevka;
 }
@@ -20,23 +20,26 @@ body {
   font-family: Arimo-head;
 }
 
+.bg-nav-chem {
+  background-color: #83a59855;
+}
+
 .navbar-brand {
   font-family: Axeon;
   font-weight: bolder;
-  color: #282828cc;
+  color: #282828;
 }
 
-#home {
-  background: linear-gradient(
-    0deg,
-    #83a598a9 8%,
-    #458588a9 65%,
-    #076678a9 100%
-  );
+nav .nav-link,
+.navbar-toggler,
+.navbar-toggler-icon {
+  color: #282828;
 }
 
-#home .nav-link {
-  color: #282828cc;
+nav .nav-link:hover,
+.navbar-brand:hover,
+.navbar-toggler:hover {
+  color: #076678;
 }
 
 #home h1 {
@@ -51,10 +54,6 @@ body {
 #home img {
   max-width: 25vw;
   max-height: 25vh;
-}
-
-main {
-  background-color: #83a598a9;
 }
 
 .section-services {
