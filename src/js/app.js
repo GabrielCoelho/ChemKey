@@ -33,7 +33,7 @@ function initializeEventListeners() {
     logoutBtn.addEventListener("click", function () {
       sessionStorage.removeItem("loggedIn");
       sessionStorage.removeItem("username");
-      window.location.href = "login.html";
+      window.location.href = "index.html";
     });
   }
 

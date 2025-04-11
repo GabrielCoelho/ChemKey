@@ -479,6 +479,7 @@
                           id="cpf"
                           placeholder="000.000.000-00"
                           aria-describedby="cpf-help"
+                          maxlength="14"
                         />
                         <div class="form-text" id="cpf-help">
                           Brazilian ID required for local support.
@@ -539,6 +540,49 @@
           </div>
         </div>
       </section>
+
+      <div
+        class="modal fade"
+        id="contact-success-modal"
+        tabindex="-1"
+        aria-labelledby="contactSuccessModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+              <h5 class="modal-title" id="contactSuccessModalLabel">
+                Message Sent!
+              </h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <p>
+                Thank you for your message! Our team will review it and get back
+                to you soon.
+              </p>
+              <p class="small text-muted">
+                (This is a demo for academic purposes, no data was actually
+                sent)
+              </p>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-primary"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
 
     <!-- Button to top-->
@@ -644,5 +688,6 @@
     ></script>
     <script src="./src/js/btu.js"></script>
     <script src="./src/js/valida_cpf.js"></script>
+    <script src="./src/js/form_submit.js"></script>
   </body>
 </html>
