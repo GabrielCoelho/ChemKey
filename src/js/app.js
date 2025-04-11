@@ -467,7 +467,6 @@ function renderPasswordsList(passwords) {
       <td><i class="fa ${favoriteIcon} favorite-toggle"></i></td>
       <td>
         <div class="site-info">
-          <img src="/api/placeholder/16/16" alt="Site icon" class="site-icon">
           <span>${password.website}</span>
         </div>
       </td>
