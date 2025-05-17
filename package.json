@@ -1,5 +1,29 @@
 {
   "dependencies": {
-    "bootstrap": "^5.3.3"
+    "bootstrap": "^5.3.3",
+    "express": "^5.1.0"
+  },
+  "name": "chemkey",
+  "version": "1.0.0",
+  "type": "modules",
+  "description": "## About ChemKey",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GabrielCoelho/ChemKey.git"
+  },
+  "author": "Gabriel Coelho Soares",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GabrielCoelho/ChemKey/issues"
+  },
+  "homepage": "https://github.com/GabrielCoelho/ChemKey#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }
