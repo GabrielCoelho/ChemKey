@@ -1,0 +1,161 @@
+<%-
+  include('../layouts/main', {
+    body: `
+      <div class="container text-center">
+        <div id="entry" class="justify-content-md-center align-items-center row gx-4 col-md-6 col-xs-12">
+          <form id="login-form" class="form-signin w-100 m-auto">
+            <img
+              class="mb-4"
+              src="/src/public/images/logo.png"
+              alt="Logo"
+              width="100"
+              height="100"
+            />
+            <h1 class="display-1 mb-3 fw-normal chem-font">ChemKey</h1>
+
+            <!-- Mensagens de erro/sucesso -->
+            <% if (error) { %>
+              <div class="alert alert-danger" role="alert">
+                <%= error %>
+              </div>
+            <% } %>
+
+            <% if (message) { %>
+              <div class="alert alert-success" role="alert">
+                <%= message %>
+              </div>
+            <% } %>
+
+            <div class="form-floating">
+              <input type="email" name="email" id="email" class="form-control" value="" required />
+              <label for="email">Email</label>
+            </div>
+            <div class="form-floating">
+              <input type="password" name="password" id="password" class="form-control" required />
+              <label for="password">Password</label>
+            </div>
+
+            <button class="btn btn-primary w-100 py-2" type="submit">
+              <span class="btn-text">Sign in</span>
+              <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            </button>
+
+            <div class="mt-3">
+              <p class="text-muted">
+                Don't have an account?
+                <a href="/register" class="text-decoration-none">Create one here</a>
+              </p>
+            </div>
+
+            <p class="mt-5 mb-3 text-body-secondary">© dev:Coelho est. 2025</p>
+          </form>
+        </div>
+      </div>
+
+      <script>
+        // Login form handler
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+          e.preventDefault();
+
+          const submitButton = this.querySelector('button[type="submit"]');
+          const btnText = submitButton.querySelector('.btn-text');
+          const spinner = submitButton.querySelector('.spinner-border');
+
+          // Show loading state
+          submitButton.disabled = true;
+          btnText.textContent = 'Signing in...';
+          spinner.classList.remove('d-none');
+
+          try {
+            const formData = new FormData(this);
+            const data = {
+              email: formData.get('email'),
+              password: formData.get('password')
+            };
+
+            const response = await fetch('/auth/login', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              // Show success message
+              const alertDiv = document.createElement('div');
+              alertDiv.className = 'alert alert-success';
+              alertDiv.textContent = result.message;
+
+              // Remove any existing alerts
+              const existingAlert = this.querySelector('.alert');
+              if (existingAlert) {
+                existingAlert.remove();
+              }
+
+              // Insert new alert
+              this.querySelector('h1').insertAdjacentElement('afterend', alertDiv);
+
+              // Redirect after delay
+              setTimeout(() => {
+                window.location.href = result.redirectUrl || '/app';
+              }, 1500);
+
+            } else {
+              // Show error message
+              const alertDiv = document.createElement('div');
+              alertDiv.className = 'alert alert-danger';
+              alertDiv.textContent = result.error;
+
+              // Remove any existing alerts
+              const existingAlert = this.querySelector('.alert');
+              if (existingAlert) {
+                existingAlert.remove();
+              }
+
+              // Insert new alert
+              this.querySelector('h1').insertAdjacentElement('afterend', alertDiv);
+
+              // Reset password field
+              document.getElementById('password').value = '';
+              document.getElementById('password').focus();
+            }
+
+          } catch (error) {
+            console.error('Login error:', error);
+
+            // Show generic error
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger';
+            alertDiv.textContent = 'Erro de conexão. Tente novamente.';
+
+            // Remove any existing alerts
+            const existingAlert = this.querySelector('.alert');
+            if (existingAlert) {
+              existingAlert.remove();
+            }
+
+            // Insert new alert
+            this.querySelector('h1').insertAdjacentElement('afterend', alertDiv);
+
+          } finally {
+            // Reset loading state
+            submitButton.disabled = false;
+            btnText.textContent = 'Sign in';
+            spinner.classList.add('d-none');
+          }
+        });
+
+        // Focus on first input
+        document.getElementById('email').focus();
+      </script>
+    `,
+    customCSS: ['/src/css/login.css'],
+    bodyClass: 'd-flex align-items-center py-4 bg-body-tertiary',
+    showNavbar: false,
+    showFooter: false,
+    currentPage: 'login'
+  })
+%>
