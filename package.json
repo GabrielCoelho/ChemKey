@@ -23,8 +23,11 @@
     "type": "git",
     "url": "git+https://github.com/GabrielCoelho/ChemKey.git"
   },
-  "author": "Gabriel Coelho Soares",
-  "license": "ISC",
+  "author": [
+    "Gabriel Coelho Soares",
+    "Mateus Araújo"
+  ],
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/GabrielCoelho/ChemKey/issues"
   },
