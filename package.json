@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "bootstrap": "^5.3.3",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "sequelize": "^6.37.7",
+    "sqlite3": "^5.1.7"
   },
   "name": "chemkey",
   "version": "1.0.0",
@@ -9,9 +11,13 @@
   "description": "## About ChemKey",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "db:migrate": "npx sequelize-cli db:migrate",
+    "db:migrate:undo": "npx sequelize-cli db:migrate:undo",
+    "db:migrate:status": "npx sequelize-cli db:migrate:status",
+    "db:reset": "npx sequelize-cli db:migrate:undo:all && npm run db:migrate"
   },
   "repository": {
     "type": "git",
@@ -24,6 +30,8 @@
   },
   "homepage": "https://github.com/GabrielCoelho/ChemKey#readme",
   "devDependencies": {
+    "@types/node": "^22.15.30",
+    "@types/sequelize": "^4.28.20",
     "nodemon": "^3.1.10"
   }
 }
