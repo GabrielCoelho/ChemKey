@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "ESNext",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "lib": ["ES2022"],
     "outDir": "./dist",
@@ -47,9 +47,9 @@
     "**/*.spec.ts"
   ],
   "ts-node": {
-    "esm": true,
+    "esm": false,
     "compilerOptions": {
-      "module": "ESNext"
+      "module": "CommonJS"
     }
   }
 }

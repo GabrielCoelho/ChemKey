@@ -76,17 +76,23 @@ class User
     await user.setPassword(userData.password);
     return await user.save();
   }
-
-  // Hooks for data processing
-  static async beforeCreate(user: User): Promise<void> {
-    user.email = user.email.toLowerCase();
+  // Static methods
+  public static async findByEmail(email: string): Promise<User | null> {
+    return this.findOne({
+      where: { email: email.toLowerCase() },
+    });
   }
 
-  static async beforeUpdate(user: User): Promise<void> {
+  // Hooks for data processing
+  static beforeCreate = async (user: User): Promise<void> => {
+    user.email = user.email.toLowerCase();
+  };
+
+  static beforeUpdate = async (user: User): Promise<void> => {
     if (user.changed("email")) {
       user.email = user.email.toLowerCase();
     }
-  }
+  };
 }
 
 User.init(

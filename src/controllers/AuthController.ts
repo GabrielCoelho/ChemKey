@@ -2,6 +2,11 @@ import { Request, Response } from "express";
 import User from "../entities/User";
 import CryptoService from "../services/CryptoService";
 
+// Type for Sequelize errors
+interface SequelizeError extends Error {
+  name: string;
+  errors?: Array<{ message: string }>;
+}
 export class AuthController {
   /**
    * POST /auth/login
