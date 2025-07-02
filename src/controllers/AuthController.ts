@@ -7,6 +7,7 @@ interface SequelizeError extends Error {
   name: string;
   errors?: Array<{ message: string }>;
 }
+
 export class AuthController {
   /**
    * POST /auth/login
@@ -23,8 +24,11 @@ export class AuthController {
         });
       }
 
-      // Buscar usuário por email
-      const user = await User.scope("withSensitiveData").findByEmail(email);
+      // Buscar usuário por email (com dados sensíveis)
+      const user = await User.scope("withSensitiveData").findOne({
+        where: { email: email.toLowerCase() },
+      });
+
       if (!user) {
         return res.status(401).json({
           success: false,
@@ -122,8 +126,11 @@ export class AuthController {
         });
       }
 
-      // Verificar se usuário já existe
-      const existingUser = await User.findByEmail(email);
+      // Verificar se usuário já existe - usando findOne diretamente
+      const existingUser = await User.findOne({
+        where: { email: email.toLowerCase() },
+      });
+
       if (existingUser) {
         return res.status(409).json({
           success: false,
@@ -152,8 +159,11 @@ export class AuthController {
     } catch (error) {
       console.error("Erro no registro:", error);
 
+      // Verificar se é um erro conhecido do Sequelize
+      const sequelizeError = error as SequelizeError;
+
       // Tratar erro de email duplicado do banco
-      if (error.name === "SequelizeUniqueConstraintError") {
+      if (sequelizeError.name === "SequelizeUniqueConstraintError") {
         return res.status(409).json({
           success: false,
           error: "Este email já está em uso.",
@@ -161,8 +171,13 @@ export class AuthController {
       }
 
       // Tratar erros de validação do Sequelize
-      if (error.name === "SequelizeValidationError") {
-        const validationErrors = error.errors.map((err: any) => err.message);
+      if (
+        sequelizeError.name === "SequelizeValidationError" &&
+        sequelizeError.errors
+      ) {
+        const validationErrors = sequelizeError.errors.map(
+          (err) => err.message,
+        );
         return res.status(400).json({
           success: false,
           error: validationErrors.join(", "),
@@ -180,33 +195,42 @@ export class AuthController {
    * POST /auth/logout
    */
   public static async logout(req: Request, res: Response): Promise<Response> {
-    try {
-      // Destruir sessão
-      req.session.destroy((err) => {
-        if (err) {
-          console.error("Erro ao destruir sessão:", err);
-          return res.status(500).json({
-            success: false,
-            error: "Erro ao fazer logout.",
-          });
-        }
+    return new Promise((resolve) => {
+      try {
+        // Destruir sessão
+        req.session.destroy((err) => {
+          if (err) {
+            console.error("Erro ao destruir sessão:", err);
+            resolve(
+              res.status(500).json({
+                success: false,
+                error: "Erro ao fazer logout.",
+              }),
+            );
+            return;
+          }
 
-        // Limpar cookie
-        res.clearCookie("chemkey.sid");
+          // Limpar cookie
+          res.clearCookie("chemkey.sid");
 
-        return res.json({
-          success: true,
-          message: "Logout realizado com sucesso!",
-          redirectUrl: "/",
+          resolve(
+            res.json({
+              success: true,
+              message: "Logout realizado com sucesso!",
+              redirectUrl: "/",
+            }),
+          );
         });
-      });
-    } catch (error) {
-      console.error("Erro no logout:", error);
-      return res.status(500).json({
-        success: false,
-        error: "Erro interno do servidor.",
-      });
-    }
+      } catch (error) {
+        console.error("Erro no logout:", error);
+        resolve(
+          res.status(500).json({
+            success: false,
+            error: "Erro interno do servidor.",
+          }),
+        );
+      }
+    });
   }
 
   /**

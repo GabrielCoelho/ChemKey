@@ -1,4 +1,4 @@
-import { DataTypes, Model, Optional, Association } from "sequelize";
+import { DataTypes, Model, Optional, Association, Op } from "sequelize";
 import sequelize from "../config/index";
 import User from "./User";
 
@@ -115,7 +115,7 @@ class Password
       where: {
         user_id: userId,
         website: {
-          [sequelize.Op.like]: `%${searchTerm}%`,
+          [Op.like]: `%${searchTerm}%`,
         },
       },
       order: [["website", "ASC"]],

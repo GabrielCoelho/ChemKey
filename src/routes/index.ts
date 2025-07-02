@@ -10,6 +10,7 @@ router.get("/", (req: Request, res: Response) => {
       "A private password manager that keeps your digital keys secure and local.",
     user: req.session.user || null,
     isLoggedIn: !!req.session.user,
+    currentPage: "home",
   });
 });
 
@@ -24,6 +25,9 @@ router.get("/login", (req: Request, res: Response) => {
     title: "ChemKey - Login",
     error: (req.query.error as string) || null,
     message: (req.query.message as string) || null,
+    user: null,
+    isLoggedIn: false,
+    currentPage: "login",
   });
 });
 
@@ -37,7 +41,9 @@ router.get("/app", (req: Request, res: Response) => {
   res.render("pages/app", {
     title: "ChemKey - Your Password Manager",
     user: req.session.user,
-    username: req.session.user.name,
+    username: req.session.user.name, // Manter por compatibilidade
+    isLoggedIn: true,
+    currentPage: "app",
   });
 });
 
@@ -52,6 +58,9 @@ router.get("/register", (req: Request, res: Response) => {
     title: "ChemKey - Criar Conta",
     error: (req.query.error as string) || null,
     message: (req.query.message as string) || null,
+    user: null,
+    isLoggedIn: false,
+    currentPage: "register",
   });
 });
 

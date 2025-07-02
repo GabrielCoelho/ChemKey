@@ -1,13 +1,19 @@
 import { Request, Response } from "express";
 import Password from "../entities/Password";
 import User from "../entities/User";
-import CryptoService from "../services/CryptoService";
+import CryptoService, { EncryptedData } from "../services/CryptoService";
 
 // Extend session interface to include masterKey
 declare module "express-session" {
   interface SessionData {
     masterKey?: string;
   }
+}
+
+// Type for Sequelize errors
+interface SequelizeError extends Error {
+  name: string;
+  errors?: Array<{ message: string }>;
 }
 
 export class PasswordController {
@@ -43,12 +49,13 @@ export class PasswordController {
       const decryptedPasswords = await Promise.all(
         encryptedPasswords.map(async (passwordEntry) => {
           try {
+            // A senha está armazenada como JSON string no banco
+            const encryptedData: EncryptedData = JSON.parse(
+              passwordEntry.encrypted_password,
+            );
+
             const decryptedPassword = await CryptoService.decryptPassword(
-              {
-                encrypted: passwordEntry.encrypted_password,
-                iv: "", // IV será extraído do encrypted_password
-                salt: "",
-              },
+              encryptedData,
               masterKey,
             );
 
@@ -129,7 +136,8 @@ export class PasswordController {
       }
 
       // Calcular força da senha
-      const passwordStrength = CryptoService.calculatePasswordStrength(password);
+      const passwordStrength =
+        CryptoService.calculatePasswordStrength(password);
 
       // Criptografar senha antes de salvar
       const encryptedData = await CryptoService.encryptPassword(
@@ -142,7 +150,7 @@ export class PasswordController {
         user_id: userId,
         website: website.trim(),
         username: username.trim(),
-        encrypted_password: encryptedData.encrypted,
+        encrypted_password: JSON.stringify(encryptedData), // Armazenar como JSON
         category: category || "other",
         notes: notes?.trim() || "",
         favorite: false,
@@ -167,8 +175,14 @@ export class PasswordController {
       console.error("Erro ao salvar senha:", error);
 
       // Tratar erros específicos de validação
-      if (error.name === "SequelizeValidationError") {
-        const validationErrors = error.errors.map((err: any) => err.message);
+      const sequelizeError = error as SequelizeError;
+      if (
+        sequelizeError.name === "SequelizeValidationError" &&
+        sequelizeError.errors
+      ) {
+        const validationErrors = sequelizeError.errors.map(
+          (err) => err.message,
+        );
         return res.status(400).json({
           success: false,
           error: validationErrors.join(", "),
@@ -210,6 +224,14 @@ export class PasswordController {
         });
       }
 
+      // Validar ID
+      if (!id || isNaN(parseInt(id))) {
+        return res.status(400).json({
+          success: false,
+          error: "ID inválido.",
+        });
+      }
+
       // Buscar senha existente
       const existingPassword = await Password.findOne({
         where: {
@@ -243,7 +265,7 @@ export class PasswordController {
           masterKey,
         );
 
-        updateData.encrypted_password = encryptedData.encrypted;
+        updateData.encrypted_password = JSON.stringify(encryptedData);
         updateData.strength = passwordStrength;
       }
 
@@ -268,8 +290,14 @@ export class PasswordController {
     } catch (error) {
       console.error("Erro ao atualizar senha:", error);
 
-      if (error.name === "SequelizeValidationError") {
-        const validationErrors = error.errors.map((err: any) => err.message);
+      const sequelizeError = error as SequelizeError;
+      if (
+        sequelizeError.name === "SequelizeValidationError" &&
+        sequelizeError.errors
+      ) {
+        const validationErrors = sequelizeError.errors.map(
+          (err) => err.message,
+        );
         return res.status(400).json({
           success: false,
           error: validationErrors.join(", "),
@@ -298,6 +326,14 @@ export class PasswordController {
         return res.status(401).json({
           success: false,
           error: "Usuário não autenticado.",
+        });
+      }
+
+      // Validar ID
+      if (!id || isNaN(parseInt(id))) {
+        return res.status(400).json({
+          success: false,
+          error: "ID inválido.",
         });
       }
 
@@ -355,10 +391,29 @@ export class PasswordController {
         });
       }
 
+      // Validar ID
+      if (!id || isNaN(parseInt(id))) {
+        return res.status(400).json({
+          success: false,
+          error: "ID inválido.",
+        });
+      }
+
       // Buscar senha
+      // Validar ID
+      if (!id || isNaN(parseInt(id))) {
+        return res.status(400).json({
+          success: false,
+          error: "ID inválido.",
+        });
+      }
+
+      // Converter ID para número após validação
+      const passwordId = parseInt(id);
+
       const passwordEntry = await Password.findOne({
         where: {
-          id: parseInt(id),
+          id: passwordId,
           user_id: userId,
         },
       });
@@ -371,12 +426,11 @@ export class PasswordController {
       }
 
       // Descriptografar senha
+      const encryptedData: EncryptedData = JSON.parse(
+        passwordEntry.encrypted_password,
+      );
       const decryptedPassword = await CryptoService.decryptPassword(
-        {
-          encrypted: passwordEntry.encrypted_password,
-          iv: "",
-          salt: "",
-        },
+        encryptedData,
         masterKey,
       );
 
@@ -441,7 +495,8 @@ export class PasswordController {
         excludeAmbiguous,
       });
 
-      const strength = CryptoService.calculatePasswordStrength(generatedPassword);
+      const strength =
+        CryptoService.calculatePasswordStrength(generatedPassword);
 
       return res.json({
         success: true,
@@ -496,12 +551,11 @@ export class PasswordController {
       const decryptedFavorites = await Promise.all(
         favoritePasswords.map(async (passwordEntry) => {
           try {
+            const encryptedData: EncryptedData = JSON.parse(
+              passwordEntry.encrypted_password,
+            );
             const decryptedPassword = await CryptoService.decryptPassword(
-              {
-                encrypted: passwordEntry.encrypted_password,
-                iv: "",
-                salt: "",
-              },
+              encryptedData,
               masterKey,
             );
 
@@ -542,53 +596,53 @@ export class PasswordController {
     }
   }
 
-  /**
-   * PATCH /passwords/:id/favorite - Toggle status de favorito
-   */
-  public static async toggleFavorite(
-    req: Request,
-    res: Response,
-  ): Promise<Response> {
-    try {
-      const { id } = req.params;
-      const userId = req.session?.user?.id;
-
-      if (!userId) {
-        return res.status(401).json({
-          success: false,
-          error: "Usuário não autenticado.",
-        });
-      }
-
-      const passwordEntry = await Password.findOne({
-        where: {
-          id: parseInt(id),
-          user_id: userId,
-        },
-      });
-
-      if (!passwordEntry) {
-        return res.status(404).json({
-          success: false,
-          error: "Senha não encontrada.",
-        });
-      }
-
-      await passwordEntry.toggleFavorite();
-
-      return res.json({
-        success: true,
-        message: `Senha ${passwordEntry.favorite ? "adicionada aos" : "removida dos"} favoritos!`,
-        favorite: passwordEntry.favorite,
-      });
-    } catch (error) {
-      console.error("Erro ao alterar favorito:", error);
-      return res.status(500).json({
-        success: false,
-        error: "Erro ao alterar status de favorito.",
-      });
-    }
-  }
+  // /**
+  //  * PATCH /passwords/:id/favorite - Toggle status de favorito
+  //  */
+  // public static async toggleFavorite(
+  //   req: Request,
+  //   res: Response,
+  // ): Promise<Response> {
+  //   try {
+  //     const { id } = req.params;
+  //     const userId = req.session?.user?.id;
+  //
+  //     if (!userId) {
+  //       return res.status(401).json({
+  //         success: false,
+  //         error: "Usuário não autenticado.",
+  //       });
+  //     }
+  //
+  //     const passwordEntry = await Password.findOne({
+  //       where: {
+  //         id: parseInt(id),
+  //         user_id: userId,
+  //       },
+  //     });
+  //
+  //     if (!passwordEntry) {
+  //       return res.status(404).json({
+  //         success: false,
+  //         error: "Senha não encontrada.",
+  //       });
+  //     }
+  //
+  //     await passwordEntry.toggleFavorite();
+  //
+  //     return res.json({
+  //       success: true,
+  //       message: `Senha ${passwordEntry.favorite ? "adicionada aos" : "removida dos"} favoritos!`,
+  //       favorite: passwordEntry.favorite,
+  //     });
+  //   } catch (error) {
+  //     console.error("Erro ao alterar favorito:", error);
+  //     return res.status(500).json({
+  //       success: false,
+  //       error: "Erro ao alterar status de favorito.",
+  //     });
+  //   }
+  // }
 }
 
 export default PasswordController;

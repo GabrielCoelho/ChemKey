@@ -3,6 +3,7 @@ import App from "./app";
 // Tratamento de exceções não capturadas
 process.on("uncaughtException", (error: Error) => {
   console.error("❌ Exceção não capturada:", error);
+  console.log(error.name + " " + error.message);
   process.exit(1);
 });
 

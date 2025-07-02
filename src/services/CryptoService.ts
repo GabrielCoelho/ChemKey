@@ -8,6 +8,7 @@ export interface EncryptedData {
   encrypted: string;
   iv: string;
   salt: string;
+  authTag: string;
 }
 
 export class CryptoService {
@@ -18,8 +19,8 @@ export class CryptoService {
   private static readonly TAG_LENGTH = 16; // 128 bits
   private static readonly SCRYPT_OPTIONS = {
     N: 16384, // CPU/memory cost
-    r: 8,     // Block size
-    p: 1,     // Parallelization
+    r: 8, // Block size
+    p: 1, // Parallelization
   };
 
   /**
@@ -27,7 +28,7 @@ export class CryptoService {
    */
   public static async deriveMasterKey(
     userPassword: string,
-    salt?: Buffer
+    salt?: Buffer,
   ): Promise<{ key: string; salt: string }> {
     const keySalt = salt || randomBytes(this.SALT_LENGTH);
 
@@ -35,7 +36,6 @@ export class CryptoService {
       userPassword,
       keySalt,
       this.KEY_LENGTH,
-      this.SCRYPT_OPTIONS
     )) as Buffer;
 
     return {
@@ -49,28 +49,34 @@ export class CryptoService {
    */
   public static async encryptPassword(
     plainPassword: string,
-    masterKey: string
+    masterKey: string,
   ): Promise<EncryptedData> {
     try {
       const key = Buffer.from(masterKey, "hex");
       const iv = randomBytes(this.IV_LENGTH);
 
-      const cipher = crypto.createCipher(this.ALGORITHM, key);
+      // Usar createCipheriv (não createCipher que está deprecated)
+      const cipher = crypto.createCipheriv(this.ALGORITHM, key, iv);
+
+      // Adicionar dados autenticados adicionais (AAD)
       cipher.setAAD(Buffer.from("ChemKey-Password", "utf8"));
 
       let encrypted = cipher.update(plainPassword, "utf8", "hex");
       encrypted += cipher.final("hex");
 
+      // Obter tag de autenticação
       const authTag = cipher.getAuthTag();
-      const encryptedWithTag = encrypted + authTag.toString("hex");
 
       return {
-        encrypted: encryptedWithTag,
+        encrypted,
         iv: iv.toString("hex"),
         salt: "", // Não usado aqui, master key já foi derivada
+        authTag: authTag.toString("hex"),
       };
     } catch (error) {
-      throw new Error(`Erro na criptografia: ${error.message}`);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(`Erro na criptografia: ${errorMessage}`);
     }
   }
 
@@ -79,30 +85,30 @@ export class CryptoService {
    */
   public static async decryptPassword(
     encryptedData: EncryptedData,
-    masterKey: string
+    masterKey: string,
   ): Promise<string> {
     try {
       const key = Buffer.from(masterKey, "hex");
       const iv = Buffer.from(encryptedData.iv, "hex");
+      const authTag = Buffer.from(encryptedData.authTag, "hex");
 
-      // Separar dados criptografados do auth tag
-      const encryptedWithTag = encryptedData.encrypted;
-      const encrypted = encryptedWithTag.slice(0, -this.TAG_LENGTH * 2);
-      const authTag = Buffer.from(
-        encryptedWithTag.slice(-this.TAG_LENGTH * 2),
-        "hex"
-      );
+      // Usar createDecipheriv (não createDecipher que está deprecated)
+      const decipher = crypto.createDecipheriv(this.ALGORITHM, key, iv);
 
-      const decipher = crypto.createDecipher(this.ALGORITHM, key);
-      decipher.setAAD(Buffer.from("ChemKey-Password", "utf8"));
+      // Definir tag de autenticação
       decipher.setAuthTag(authTag);
 
-      let decrypted = decipher.update(encrypted, "hex", "utf8");
+      // Adicionar dados autenticados adicionais (AAD)
+      decipher.setAAD(Buffer.from("ChemKey-Password", "utf8"));
+
+      let decrypted = decipher.update(encryptedData.encrypted, "hex", "utf8");
       decrypted += decipher.final("utf8");
 
       return decrypted;
     } catch (error) {
-      throw new Error(`Erro na descriptografia: ${error.message}`);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new Error(`Erro na descriptografia: ${errorMessage}`);
     }
   }
 
@@ -129,16 +135,22 @@ export class CryptoService {
     let charset = "";
 
     if (includeLowercase) {
-      charset += excludeAmbiguous ? "abcdefghjkmnpqrstuvwxyz" : "abcdefghijklmnopqrstuvwxyz";
+      charset += excludeAmbiguous
+        ? "abcdefghjkmnpqrstuvwxyz"
+        : "abcdefghijklmnopqrstuvwxyz";
     }
     if (includeUppercase) {
-      charset += excludeAmbiguous ? "ABCDEFGHJKMNPQRSTUVWXYZ" : "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      charset += excludeAmbiguous
+        ? "ABCDEFGHJKMNPQRSTUVWXYZ"
+        : "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     }
     if (includeNumbers) {
       charset += excludeAmbiguous ? "23456789" : "0123456789";
     }
     if (includeSymbols) {
-      charset += excludeAmbiguous ? "!@#$%^&*-_=+<>?" : "!@#$%^&*()-_=+[]{}|;:,.<>?";
+      charset += excludeAmbiguous
+        ? "!@#$%^&*-_=+<>?"
+        : "!@#$%^&*()-_=+[]{}|;:,.<>?";
     }
 
     if (!charset) {
@@ -193,10 +205,7 @@ export class CryptoService {
    * Gera hash seguro para armazenamento (não criptográfico)
    */
   public static generateSecureHash(data: string): string {
-    return crypto
-      .createHash("sha256")
-      .update(data)
-      .digest("hex");
+    return crypto.createHash("sha256").update(data).digest("hex");
   }
 }
 

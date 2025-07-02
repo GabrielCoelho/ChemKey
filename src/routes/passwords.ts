@@ -84,11 +84,11 @@ router.delete(
 /**
  * PATCH /passwords/:id/favorite
  * Toggle status de favorito
- */
-router.patch(
-  "/:id/favorite",
-  ValidationMiddleware.validatePasswordId,
-  PasswordController.toggleFavorite,
-);
+//  */
+// router.patch(
+//   "/:id/favorite",
+//   ValidationMiddleware.validatePasswordId,
+//   PasswordController.toggleFavorite,
+// );
 
 export default router;

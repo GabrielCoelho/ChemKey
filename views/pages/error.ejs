@@ -1,0 +1,87 @@
+<%-
+  include('../layouts/main', {
+    body: `
+      <div class="container text-center py-5">
+        <div class="row justify-content-center">
+          <div class="col-md-8 col-lg-6">
+            <div class="error-container">
+              <h1 class="display-1 text-danger mb-4 oganesson">500</h1>
+              <h2 class="h3 mb-4">Oops! Algo deu errado</h2>
+
+              <div class="alert alert-danger" role="alert">
+                <i class="fa fa-exclamation-triangle me-2"></i>
+                <strong>Erro:</strong> <%= error %>
+              </div>
+
+              <% if (typeof stack !== 'undefined' && stack) { %>
+                <div class="mt-4">
+                  <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#errorStack" aria-expanded="false" aria-controls="errorStack">
+                    <i class="fa fa-code me-1"></i> Ver Detalhes Técnicos
+                  </button>
+
+                  <div class="collapse mt-3" id="errorStack">
+                    <div class="card">
+                      <div class="card-body">
+                        <h6 class="card-title">Stack Trace:</h6>
+                        <pre class="text-start small text-muted"><%= stack %></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <% } %>
+
+              <div class="mt-4">
+                <a href="/" class="btn btn-primary me-2">
+                  <i class="fa fa-home me-1"></i> Voltar ao Início
+                </a>
+                <button onclick="window.history.back()" class="btn btn-outline-secondary">
+                  <i class="fa fa-arrow-left me-1"></i> Página Anterior
+                </button>
+              </div>
+
+              <div class="mt-4 text-muted">
+                <p class="small">
+                  Se o problema persistir, entre em contato com o suporte através da
+                  <a href="/#about">página de contato</a>.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <style>
+        .error-container {
+          padding: 2rem;
+        }
+
+        .display-1 {
+          font-size: 6rem;
+          font-weight: bold;
+          text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        pre {
+          max-height: 300px;
+          overflow-y: auto;
+          background-color: #f8f9fa;
+          padding: 1rem;
+          border-radius: 0.375rem;
+          border: 1px solid #dee2e6;
+        }
+
+        @media (max-width: 768px) {
+          .display-1 {
+            font-size: 4rem;
+          }
+        }
+      </style>
+    `,
+    customCSS: ['/src/css/style.css'],
+    currentPage: 'error',
+    isLoggedIn: false,
+    user: null,
+    showNavbar: true,
+    showFooter: true
+  })
+%>

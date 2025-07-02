@@ -49,7 +49,7 @@
       <% if (isLoggedIn && user) { %>
         <div class="d-flex align-items-center">
           <span class="navbar-text me-3">
-            Welcome, <%= user.name %>
+            Welcome, <%= user.name || user.username || 'User' %>
           </span>
           <button id="logout-btn" class="btn btn-outline-dark btn-sm">
             <i class="fa fa-sign-out"></i> Logout

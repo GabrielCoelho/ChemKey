@@ -6,8 +6,8 @@ interface UserAttributes {
   id: number;
   name: string;
   email: string;
-  password_hash: string; // 🔒 Campo para hash da senha
-  master_key?: string; // 🔐 Chave mestra para criptografia das senhas
+  password_hash: string;
+  master_key?: string;
   created_at?: Date;
   updated_at?: Date;
   last_login_at?: Date;
@@ -30,7 +30,7 @@ class User
   public readonly updated_at!: Date;
   public last_login_at?: Date;
 
-  // Methods for password management
+  // Instance methods for password management
   public async setPassword(plainPassword: string): Promise<void> {
     const saltRounds = 12;
     this.password_hash = await bcrypt.hash(plainPassword, saltRounds);
@@ -76,23 +76,6 @@ class User
     await user.setPassword(userData.password);
     return await user.save();
   }
-  // Static methods
-  public static async findByEmail(email: string): Promise<User | null> {
-    return this.findOne({
-      where: { email: email.toLowerCase() },
-    });
-  }
-
-  // Hooks for data processing
-  static beforeCreate = async (user: User): Promise<void> => {
-    user.email = user.email.toLowerCase();
-  };
-
-  static beforeUpdate = async (user: User): Promise<void> => {
-    if (user.changed("email")) {
-      user.email = user.email.toLowerCase();
-    }
-  };
 }
 
 User.init(
@@ -113,7 +96,6 @@ User.init(
           args: [2, 100],
           msg: "Nome deve ter entre 2 e 100 caracteres",
         },
-        // Validação adicional para nomes
         is: {
           args: /^[a-zA-ZÀ-ÿ\s]+$/,
           msg: "Nome deve conter apenas letras e espaços",
@@ -135,7 +117,6 @@ User.init(
           msg: "Email é obrigatório",
         },
       },
-      // Normalização automática
       set(value: string) {
         this.setDataValue("email", value.toLowerCase().trim());
       },
@@ -164,8 +145,14 @@ User.init(
     modelName: "User",
     tableName: "users",
     hooks: {
-      beforeCreate: User.beforeCreate,
-      beforeUpdate: User.beforeUpdate,
+      beforeCreate: async (user: User) => {
+        user.email = user.email.toLowerCase();
+      },
+      beforeUpdate: async (user: User) => {
+        if (user.changed("email")) {
+          user.email = user.email.toLowerCase();
+        }
+      },
     },
     indexes: [
       {
@@ -176,12 +163,12 @@ User.init(
     ],
     defaultScope: {
       attributes: {
-        exclude: ["password_hash", "master_key"], // Excluir dados sensíveis por padrão
+        exclude: ["password_hash", "master_key"],
       },
     },
     scopes: {
       withSensitiveData: {
-        attributes: {}, // Incluir todos os campos quando necessário
+        attributes: undefined,
       },
     },
   },
