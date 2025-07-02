@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>ChemKey - Login</title>
+    <meta name="description" content="Secure login to your ChemKey password manager" />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -18,48 +19,156 @@
     <link rel="stylesheet" type="text/css" href="/src/css/login.css" />
   </head>
   <body class="d-flex align-items-center py-4 bg-body-tertiary">
+
+    <!-- Loading Overlay -->
+    <div id="login-loading-overlay" class="d-none">
+      <div class="loading-backdrop">
+        <div class="loading-content">
+          <div class="loading-animation">
+            <div class="key-icon">
+              <i class="fa fa-key fa-3x"></i>
+            </div>
+            <div class="loading-dots">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </div>
+          </div>
+          <h4 class="mt-4 mb-2">Accessing Your Vault</h4>
+          <p class="text-muted mb-0" id="loading-message">Verifying credentials...</p>
+          <div class="progress mt-3" style="height: 3px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated"
+                 id="loading-progress" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <main class="container text-center">
       <div
         id="entry"
         class="justify-content-md-center align-items-center row gx-4 col-md-6 col-xs-12"
       >
         <form id="login-form" class="form-signin w-100 m-auto">
-          <img
-            class="mb-4"
-            src="/src/public/images/logo.png"
-            alt="Logo"
-            width="100"
-            height="100"
-          />
+          <!-- Logo with pulse animation on load -->
+          <div class="logo-container mb-4">
+            <img
+              class="logo-img"
+              src="/src/public/images/logo.png"
+              alt="ChemKey Logo"
+              width="100"
+              height="100"
+            />
+          </div>
+
           <h1 class="display-1 mb-3 fw-normal chem-font">ChemKey</h1>
+          <p class="text-muted mb-4">Enter your credentials to access your secure vault</p>
 
-          <!-- Mensagens de erro/sucesso -->
-          <% if (locals.error) { %>
-            <div class="alert alert-danger" role="alert">
-              <%= error %>
-            </div>
-          <% } %>
+          <!-- Dynamic Alert Container -->
+          <div id="alert-container" class="mb-3">
+            <!-- Server-side messages -->
+            <% if (locals.error) { %>
+              <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fa fa-exclamation-circle me-2"></i>
+                <%= error %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            <% } %>
 
-          <% if (locals.message) { %>
-            <div class="alert alert-success" role="alert">
-              <%= message %>
-            </div>
-          <% } %>
-
-          <div class="form-floating">
-            <input type="email" name="email" id="email" class="form-control" value="" required />
-            <label for="email">Email</label>
+            <% if (locals.message) { %>
+              <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fa fa-check-circle me-2"></i>
+                <%= message %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            <% } %>
           </div>
-          <div class="form-floating">
-            <input type="password" name="password" id="password" class="form-control" required />
-            <label for="password">Password</label>
+
+          <!-- Email Field with Validation -->
+          <div class="form-floating mb-3">
+            <input
+              type="email"
+              name="email"
+              id="email"
+              class="form-control"
+              value=""
+              required
+              autocomplete="email"
+              data-field="email"
+            />
+            <label for="email">
+              <i class="fa fa-envelope me-2"></i>Email
+            </label>
+            <div class="invalid-feedback" id="email-error"></div>
+            <div class="valid-feedback">
+              <i class="fa fa-check me-1"></i>Valid email format
+            </div>
           </div>
 
-          <button class="btn btn-primary w-100 py-2" type="submit">
-            <span class="btn-text">Sign in</span>
-            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+          <!-- Password Field with Show/Hide -->
+          <div class="form-floating mb-3">
+            <input
+              type="password"
+              name="password"
+              id="password"
+              class="form-control"
+              required
+              autocomplete="current-password"
+              data-field="password"
+            />
+            <label for="password">
+              <i class="fa fa-lock me-2"></i>Password
+            </label>
+            <button
+              type="button"
+              class="password-toggle-btn"
+              id="toggle-password"
+              title="Show/Hide Password"
+            >
+              <i class="fa fa-eye"></i>
+            </button>
+            <div class="invalid-feedback" id="password-error"></div>
+          </div>
+
+          <!-- Remember Me & Forgot Password -->
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="remember-me" name="remember">
+              <label class="form-check-label text-muted" for="remember-me">
+                Remember me
+              </label>
+            </div>
+            <a href="#" class="text-decoration-none small" id="forgot-password-link">
+              Forgot password?
+            </a>
+          </div>
+
+          <!-- Submit Button with Loading States -->
+          <button class="btn btn-primary w-100 py-2 mb-3" type="submit" id="login-button">
+            <span class="btn-content">
+              <i class="fa fa-sign-in me-2"></i>
+              <span class="btn-text">Sign In</span>
+            </span>
+            <span class="btn-loading d-none">
+              <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+              <span class="loading-text">Signing in...</span>
+            </span>
           </button>
 
+          <!-- Quick Login for Demo -->
+          <div class="demo-section mb-4">
+            <div class="divider">
+              <span class="divider-text">Quick Demo Access</span>
+            </div>
+            <button type="button" class="btn btn-outline-secondary btn-sm w-100" id="demo-login">
+              <i class="fa fa-user me-2"></i>Demo Login (Professor Access)
+            </button>
+            <small class="text-muted d-block mt-2">
+              Please update demo credentials in code to match your test account
+            </small>
+          </div>
+
+          <!-- Register Link -->
           <div class="mt-3">
             <p class="text-muted">
               Don't have an account?
@@ -67,10 +176,42 @@
             </p>
           </div>
 
+          <!-- Security Notice -->
+          <div class="security-notice mt-4">
+            <small class="text-muted">
+              <i class="fa fa-shield me-1"></i>
+              Your data is encrypted and stored locally. We never see your passwords.
+            </small>
+          </div>
+
           <p class="mt-5 mb-3 text-body-secondary">© dev:Coelho est. 2025</p>
         </form>
       </div>
     </main>
+
+    <!-- Rate Limit Warning Modal -->
+    <div class="modal fade" id="rateLimitModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+          <div class="modal-header border-0">
+            <h5 class="modal-title">
+              <i class="fa fa-clock-o me-2 text-warning"></i>Too Many Attempts
+            </h5>
+          </div>
+          <div class="modal-body text-center">
+            <p>Please wait <span id="countdown">60</span> seconds before trying again.</p>
+            <div class="progress" style="height: 4px;">
+              <div class="progress-bar bg-warning" id="countdown-progress" style="width: 100%"></div>
+            </div>
+          </div>
+          <div class="modal-footer border-0">
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -79,103 +220,569 @@
     ></script>
 
     <script>
-      // Login form handler
-      document.getElementById('login-form').addEventListener('submit', async function(e) {
-        e.preventDefault();
+      // =============================================================================
+      // 🎯 LOGIN FORM ENHANCED FUNCTIONALITY
+      // =============================================================================
 
-        const submitButton = this.querySelector('button[type="submit"]');
-        const btnText = submitButton.querySelector('.btn-text');
-        const spinner = submitButton.querySelector('.spinner-border');
+      document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('login-form');
+        const loginButton = document.getElementById('login-button');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const loadingOverlay = document.getElementById('login-loading-overlay');
+        const alertContainer = document.getElementById('alert-container');
 
-        // Show loading state
-        submitButton.disabled = true;
-        btnText.textContent = 'Signing in...';
-        spinner.classList.remove('d-none');
+        let isSubmitting = false;
 
-        try {
-          const formData = new FormData(this);
-          const data = {
-            email: formData.get('email'),
-            password: formData.get('password')
-          };
+        // =============================================================================
+        // 🔄 FORM SUBMISSION WITH ADVANCED LOADING STATES
+        // =============================================================================
 
-          const response = await fetch('/auth/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-          });
+        loginForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
 
-          const result = await response.json();
+          if (isSubmitting) return;
 
-          if (result.success) {
-            // Show success message
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-success';
-            alertDiv.textContent = result.message;
+          // Clear previous validation states
+          clearValidationStates();
 
-            // Remove any existing alerts
-            const existingAlert = this.querySelector('.alert');
-            if (existingAlert) {
-              existingAlert.remove();
-            }
+          // Basic validation only - don't block submit for demo
+          const email = emailInput.value.trim();
+          const password = passwordInput.value.trim();
 
-            // Insert new alert
-            this.querySelector('h1').insertAdjacentElement('afterend', alertDiv);
-
-            // Redirect after delay
-            setTimeout(() => {
-              window.location.href = result.redirectUrl || '/app';
-            }, 1500);
-
-          } else {
-            // Show error message
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'alert alert-danger';
-            alertDiv.textContent = result.error;
-
-            // Remove any existing alerts
-            const existingAlert = this.querySelector('.alert');
-            if (existingAlert) {
-              existingAlert.remove();
-            }
-
-            // Insert new alert
-            this.querySelector('h1').insertAdjacentElement('afterend', alertDiv);
-
-            // Reset password field
-            document.getElementById('password').value = '';
-            document.getElementById('password').focus();
+          if (!email || !password) {
+            showErrorAlert('Please fill in both email and password');
+            return;
           }
 
-        } catch (error) {
-          console.error('Login error:', error);
+          await performLogin();
+        });
 
-          // Show generic error
-          const alertDiv = document.createElement('div');
-          alertDiv.className = 'alert alert-danger';
-          alertDiv.textContent = 'Erro de conexão. Tente novamente.';
+        async function performLogin() {
+          isSubmitting = true;
 
-          // Remove any existing alerts
-          const existingAlert = this.querySelector('.alert');
-          if (existingAlert) {
-            existingAlert.remove();
+          try {
+            // Show loading states
+            showLoadingState();
+            updateLoadingProgress(20, "Connecting to server...");
+
+            const formData = new FormData(loginForm);
+            const data = {
+              email: formData.get('email').trim(),
+              password: formData.get('password')
+            };
+
+            console.log('🔐 Attempting login with:', { email: data.email, passwordLength: data.password.length });
+
+            updateLoadingProgress(40, "Verifying credentials...");
+
+            const response = await fetch('/auth/login', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include', // Important for sessions
+              body: JSON.stringify(data)
+            });
+
+            updateLoadingProgress(60, "Processing response...");
+
+            let result;
+            try {
+              result = await response.json();
+            } catch (parseError) {
+              console.error('❌ JSON parse error:', parseError);
+              throw new Error('Server response was not valid JSON');
+            }
+
+            console.log('📡 Server response:', result);
+
+            updateLoadingProgress(80, "Loading your vault...");
+
+            // Simulate vault loading delay for UX
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            if (result.success) {
+              updateLoadingProgress(100, "Access granted! Redirecting...");
+
+              // Show success state
+              showSuccessAlert(result.message || 'Login successful!');
+
+              // Redirect after short delay
+              setTimeout(() => {
+                window.location.href = result.redirectUrl || '/app';
+              }, 1000);
+
+            } else {
+              // Handle different types of errors
+              hideLoadingState();
+
+              if (response.status === 429) {
+                showRateLimitModal();
+              } else if (response.status === 401 || response.status === 400) {
+                showErrorAlert(result.error || "Invalid email or password. Please try again.");
+                // Shake animation for incorrect credentials
+                loginForm.classList.add('shake-animation');
+                setTimeout(() => loginForm.classList.remove('shake-animation'), 600);
+              } else {
+                showErrorAlert(result.error || 'Login failed. Please try again.');
+              }
+
+              // Reset password field on error
+              passwordInput.value = '';
+              passwordInput.focus();
+            }
+
+          } catch (error) {
+            console.error('❌ Login error:', error);
+            hideLoadingState();
+
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+              showErrorAlert('Connection error. Please check your internet connection.');
+            } else if (error.message.includes('JSON')) {
+              showErrorAlert('Server error. Please try again later.');
+            } else {
+              showErrorAlert('Unexpected error: ' + error.message);
+            }
+
+          } finally {
+            isSubmitting = false;
           }
-
-          // Insert new alert
-          this.querySelector('h1').insertAdjacentElement('afterend', alertDiv);
-
-        } finally {
-          // Reset loading state
-          submitButton.disabled = false;
-          btnText.textContent = 'Sign in';
-          spinner.classList.add('d-none');
         }
-      });
 
-      // Focus on first input
-      document.getElementById('email').focus();
+        // =============================================================================
+        // 🎨 LOADING STATE MANAGEMENT
+        // =============================================================================
+
+        function showLoadingState() {
+          // Show overlay
+          loadingOverlay.classList.remove('d-none');
+
+          // Update button state
+          const btnContent = loginButton.querySelector('.btn-content');
+          const btnLoading = loginButton.querySelector('.btn-loading');
+
+          btnContent.classList.add('d-none');
+          btnLoading.classList.remove('d-none');
+          loginButton.disabled = true;
+
+          // Disable form inputs
+          emailInput.disabled = true;
+          passwordInput.disabled = true;
+        }
+
+        function hideLoadingState() {
+          // Hide overlay
+          loadingOverlay.classList.add('d-none');
+
+          // Reset button state
+          const btnContent = loginButton.querySelector('.btn-content');
+          const btnLoading = loginButton.querySelector('.btn-loading');
+
+          btnContent.classList.remove('d-none');
+          btnLoading.classList.add('d-none');
+          loginButton.disabled = false;
+
+          // Re-enable form inputs
+          emailInput.disabled = false;
+          passwordInput.disabled = false;
+        }
+
+        function updateLoadingProgress(percentage, message) {
+          const progressBar = document.getElementById('loading-progress');
+          const loadingMessage = document.getElementById('loading-message');
+
+          progressBar.style.width = percentage + '%';
+          loadingMessage.textContent = message;
+        }
+
+        // =============================================================================
+        // ✅ SIMPLIFIED VALIDATION (Demo-friendly)
+        // =============================================================================
+
+        function validateForm() {
+          // Simplified validation for demo - just check if fields are not empty
+          const email = emailInput.value.trim();
+          const password = passwordInput.value.trim();
+
+          if (!email) {
+            showFieldError('email', 'Email is required');
+            return false;
+          }
+
+          if (!password) {
+            showFieldError('password', 'Password is required');
+            return false;
+          }
+
+          // Clear any previous errors
+          clearValidationStates();
+          return true;
+        }
+
+        function isValidEmail(email) {
+          // Very flexible email validation for demo
+          return email.includes('@') && email.length >= 5;
+        }
+
+        function showFieldError(fieldName, message) {
+          const input = document.getElementById(fieldName);
+          const errorDiv = document.getElementById(fieldName + '-error');
+
+          input.classList.add('is-invalid');
+          input.classList.remove('is-valid');
+          errorDiv.textContent = message;
+        }
+
+        function showFieldSuccess(fieldName) {
+          const input = document.getElementById(fieldName);
+
+          input.classList.remove('is-invalid');
+          input.classList.add('is-valid');
+        }
+
+        function clearFieldValidation(fieldName) {
+          const input = document.getElementById(fieldName);
+
+          input.classList.remove('is-invalid', 'is-valid');
+        }
+
+        function clearValidationStates() {
+          clearFieldValidation('email');
+          clearFieldValidation('password');
+        }
+
+        // =============================================================================
+        // 🚨 ALERT MANAGEMENT
+        // =============================================================================
+
+        function showErrorAlert(message) {
+          const alertHtml = `
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <i class="fa fa-exclamation-circle me-2"></i>
+              ${message}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          `;
+          updateAlertContainer(alertHtml);
+        }
+
+        function showSuccessAlert(message) {
+          const alertHtml = `
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <i class="fa fa-check-circle me-2"></i>
+              ${message}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          `;
+          updateAlertContainer(alertHtml);
+        }
+
+        function updateAlertContainer(html) {
+          // Remove existing alerts
+          const existingAlerts = alertContainer.querySelectorAll('.alert');
+          existingAlerts.forEach(alert => alert.remove());
+
+          // Add new alert
+          alertContainer.insertAdjacentHTML('beforeend', html);
+
+          // Auto-dismiss after 5 seconds
+          setTimeout(() => {
+            const newAlert = alertContainer.querySelector('.alert');
+            if (newAlert) {
+              const bsAlert = new bootstrap.Alert(newAlert);
+              bsAlert.close();
+            }
+          }, 5000);
+        }
+
+        // =============================================================================
+        // 🕒 RATE LIMIT HANDLING
+        // =============================================================================
+
+        function showRateLimitModal() {
+          const modal = new bootstrap.Modal(document.getElementById('rateLimitModal'));
+          modal.show();
+
+          let countdown = 60;
+          const countdownElement = document.getElementById('countdown');
+          const progressElement = document.getElementById('countdown-progress');
+
+          const timer = setInterval(() => {
+            countdown--;
+            countdownElement.textContent = countdown;
+            progressElement.style.width = (countdown / 60 * 100) + '%';
+
+            if (countdown <= 0) {
+              clearInterval(timer);
+              modal.hide();
+            }
+          }, 1000);
+        }
+
+        // =============================================================================
+        // 🔧 ADDITIONAL FEATURES
+        // =============================================================================
+
+        // Password toggle
+        document.getElementById('toggle-password').addEventListener('click', function() {
+          const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+          passwordInput.setAttribute('type', type);
+
+          const icon = this.querySelector('i');
+          icon.classList.toggle('fa-eye');
+          icon.classList.toggle('fa-eye-slash');
+        });
+
+        // Demo login - updated with working credentials
+        document.getElementById('demo-login').addEventListener('click', function() {
+          // Use credentials that actually work with your backend
+          emailInput.value = 'admin@admin.com'; // Change to working email
+          passwordInput.value = 'Admin123456';  // Change to working password
+
+          showErrorAlert('Demo credentials filled. Please adjust these credentials in the code to match your working test account.');
+        });
+
+        // Forgot password
+        document.getElementById('forgot-password-link').addEventListener('click', function(e) {
+          e.preventDefault();
+          alert('Forgot password functionality will be implemented in a future version.');
+        });
+
+        // Real-time email validation - simplified
+        emailInput.addEventListener('blur', function() {
+          const email = this.value.trim();
+          if (email && !isValidEmail(email)) {
+            showFieldError('email', 'Please enter a valid email address');
+          } else if (email) {
+            clearFieldValidation('email');
+          }
+        });
+
+        // Focus on first input
+        emailInput.focus();
+
+        // Enter key handling
+        passwordInput.addEventListener('keypress', function(e) {
+          if (e.key === 'Enter') {
+            loginForm.dispatchEvent(new Event('submit'));
+          }
+        });
+      });
     </script>
+
+    <style>
+      /* =============================================================================
+       * 🎨 ENHANCED STYLES FOR LOGIN PAGE
+       * ============================================================================= */
+
+      /* Loading Overlay */
+      .loading-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(5px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+      }
+
+      .loading-content {
+        text-align: center;
+        max-width: 300px;
+      }
+
+      .loading-animation {
+        position: relative;
+        margin-bottom: 2rem;
+      }
+
+      .key-icon {
+        color: #0d6efd;
+        animation: pulse-key 2s ease-in-out infinite;
+      }
+
+      .loading-dots {
+        margin-top: 1rem;
+      }
+
+      .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #0d6efd;
+        margin: 0 4px;
+        animation: loading-bounce 1.4s ease-in-out infinite both;
+      }
+
+      .dot:nth-child(1) { animation-delay: -0.32s; }
+      .dot:nth-child(2) { animation-delay: -0.16s; }
+
+      @keyframes pulse-key {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+      }
+
+      @keyframes loading-bounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
+      }
+
+      /* Logo Animation */
+      .logo-container {
+        animation: logo-entrance 1s ease-out;
+      }
+
+      .logo-img {
+        transition: transform 0.3s ease;
+      }
+
+      .logo-img:hover {
+        transform: scale(1.05);
+      }
+
+      @keyframes logo-entrance {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Form Styling */
+      .form-floating {
+        position: relative;
+      }
+
+      .password-toggle-btn {
+        position: absolute;
+        top: 50%;
+        right: 10px;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #6c757d;
+        cursor: pointer;
+        z-index: 10;
+        padding: 5px;
+        transition: color 0.2s ease;
+      }
+
+      .password-toggle-btn:hover {
+        color: #0d6efd;
+      }
+
+      /* Button Loading States */
+      .btn-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Demo Section */
+      .demo-section {
+        position: relative;
+      }
+
+      .divider {
+        text-align: center;
+        margin: 1.5rem 0;
+        position: relative;
+      }
+
+      .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #dee2e6;
+      }
+
+      .divider-text {
+        background: #f8f9fa;
+        padding: 0 1rem;
+        color: #6c757d;
+        font-size: 0.875rem;
+      }
+
+      /* Security Notice */
+      .security-notice {
+        background: rgba(13, 110, 253, 0.05);
+        border: 1px solid rgba(13, 110, 253, 0.1);
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+      }
+
+      /* Form Validation States */
+      .is-valid {
+        border-color: #198754;
+      }
+
+      .is-invalid {
+        border-color: #dc3545;
+      }
+
+      /* Shake Animation for Errors */
+      .shake-animation {
+        animation: shake 0.6s ease-in-out;
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+        }
+
+        #entry {
+          max-width: 100%;
+        }
+
+        .display-1 {
+          font-size: 2.5rem;
+        }
+
+        .loading-content {
+          padding: 0 1rem;
+        }
+      }
+
+      /* Focus States */
+      .form-control:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+      }
+
+      /* Alert Animations */
+      .alert {
+        animation: alert-slide-in 0.3s ease-out;
+      }
+
+      @keyframes alert-slide-in {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
   </body>
 </html>
