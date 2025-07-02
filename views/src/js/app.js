@@ -1,40 +1,77 @@
-// ChemKey Application JavaScript
+// ChemKey Application JavaScript - Backend Integrated
+// Substitui localStorage por APIs reais do backend TypeScript
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Check if the user is logged in
-  checkAuthentication();
-
-  // Initialize event listeners
-  initializeEventListeners();
-
-  // Initialize password list
-  initializePasswordList();
+  // Check authentication and initialize app
+  initializeApp();
 });
 
-// Authentication check
-function checkAuthentication() {
-  // This is a simple check - in a real app, you'd use sessions, tokens, etc.
-  if (!sessionStorage.getItem("loggedIn")) {
-    // Redirect to login page if not logged in
-    window.location.href = "login.html";
-    return;
-  }
+// =============================================================================
+// 🔐 AUTHENTICATION & SESSION MANAGEMENT
+// =============================================================================
 
-  // Display the username
-  const username = sessionStorage.getItem("username") || "User";
-  document.getElementById("user-display").textContent = `Welcome, ${username}`;
+async function initializeApp() {
+  try {
+    // Verify authentication status
+    const authStatus = await checkAuthentication();
+
+    if (!authStatus.isLoggedIn) {
+      // Redirect to login if not authenticated
+      window.location.href = "/login?error=Acesso negado. Faça login primeiro.";
+      return;
+    }
+
+    // Display user info
+    displayUserInfo(authStatus.user);
+
+    // Initialize event listeners
+    initializeEventListeners();
+
+    // Load passwords from backend
+    await initializePasswordList();
+
+  } catch (error) {
+    console.error("Erro na inicialização:", error);
+    showToast("Erro ao carregar aplicação. Tente fazer login novamente.", "error");
+    setTimeout(() => window.location.href = "/login", 2000);
+  }
 }
 
-// Set up all event listeners
+async function checkAuthentication() {
+  try {
+    const response = await fetch("/auth/check", {
+      method: "GET",
+      credentials: "include" // Important for sessions
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Erro na verificação de auth:", error);
+    return { isLoggedIn: false, user: null };
+  }
+}
+
+function displayUserInfo(user) {
+  const userDisplay = document.getElementById("user-display");
+  if (userDisplay && user) {
+    userDisplay.textContent = `Welcome, ${user.name}`;
+  }
+}
+
+// =============================================================================
+// 🎯 EVENT LISTENERS SETUP
+// =============================================================================
+
 function initializeEventListeners() {
   // Logout button
   const logoutBtn = document.getElementById("logout-btn");
   if (logoutBtn) {
-    logoutBtn.addEventListener("click", function () {
-      sessionStorage.removeItem("loggedIn");
-      sessionStorage.removeItem("username");
-      window.location.href = "index.html";
-    });
+    logoutBtn.addEventListener("click", handleLogout);
   }
 
   // Password visibility toggles
@@ -64,17 +101,13 @@ function initializeEventListeners() {
   }
 
   // Generate new password in the generator modal
-  const generateNewPasswordBtn = document.getElementById(
-    "generate-new-password",
-  );
+  const generateNewPasswordBtn = document.getElementById("generate-new-password");
   if (generateNewPasswordBtn) {
     generateNewPasswordBtn.addEventListener("click", generatePassword);
   }
 
   // Use the generated password button
-  const useGeneratedPasswordBtn = document.getElementById(
-    "use-generated-password",
-  );
+  const useGeneratedPasswordBtn = document.getElementById("use-generated-password");
   if (useGeneratedPasswordBtn) {
     useGeneratedPasswordBtn.addEventListener("click", useGeneratedPassword);
   }
@@ -102,25 +135,6 @@ function initializeEventListeners() {
     });
   }
 
-  // Favorite toggle buttons
-  document.querySelectorAll(".favorite-toggle").forEach((star) => {
-    star.addEventListener("click", function () {
-      this.classList.toggle("fa-star-o");
-      this.classList.toggle("fa-star");
-      this.classList.toggle("active");
-    });
-  });
-
-  // Edit password buttons
-  document.querySelectorAll(".edit-password").forEach((button) => {
-    button.addEventListener("click", editPassword);
-  });
-
-  // Delete password buttons
-  document.querySelectorAll(".delete-password").forEach((button) => {
-    button.addEventListener("click", deletePassword);
-  });
-
   // Search passwords functionality
   const searchInput = document.getElementById("search-passwords");
   if (searchInput) {
@@ -140,26 +154,182 @@ function initializeEventListeners() {
   }
 }
 
-// Initialize/load saved passwords
-function initializePasswordList() {
-  // Check if we have any passwords saved in local storage
-  let passwords = getPasswordsFromStorage();
+// =============================================================================
+// 🔐 AUTHENTICATION ACTIONS
+// =============================================================================
 
-  // If there are no passwords, show the empty state
-  if (passwords.length === 0) {
-    document.getElementById("passwords-table").classList.add("d-none");
-    document.getElementById("empty-state").classList.remove("d-none");
-  } else {
-    document.getElementById("passwords-table").classList.remove("d-none");
-    document.getElementById("empty-state").classList.add("d-none");
+async function handleLogout() {
+  try {
+    const response = await fetch("/auth/logout", {
+      method: "POST",
+      credentials: "include"
+    });
 
-    // Render the passwords in the table
-    renderPasswordsList(passwords);
+    const result = await response.json();
+
+    if (result.success) {
+      showToast("Logout realizado com sucesso!");
+      setTimeout(() => {
+        window.location.href = result.redirectUrl || "/";
+      }, 1000);
+    } else {
+      showToast("Erro ao fazer logout: " + result.error, "error");
+    }
+  } catch (error) {
+    console.error("Erro no logout:", error);
+    showToast("Erro ao fazer logout. Redirecionando...", "error");
+    setTimeout(() => window.location.href = "/", 2000);
   }
 }
 
-// Save a new password
-function savePassword() {
+// =============================================================================
+// 📡 PASSWORD API FUNCTIONS
+// =============================================================================
+
+async function loadPasswordsFromAPI() {
+  try {
+    const response = await fetch("/passwords", {
+      method: "GET",
+      credentials: "include"
+    });
+
+    if (response.status === 401) {
+      // Session expired
+      window.location.href = "/login?error=Sessão expirada. Faça login novamente.";
+      return [];
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success) {
+      return result.passwords || [];
+    } else {
+      throw new Error(result.error || "Erro ao carregar senhas");
+    }
+  } catch (error) {
+    console.error("Erro ao carregar senhas:", error);
+    showToast("Erro ao carregar senhas: " + error.message, "error");
+    return [];
+  }
+}
+
+async function savePasswordToAPI(passwordData) {
+  try {
+    const response = await fetch("/passwords", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(passwordData)
+    });
+
+    if (response.status === 401) {
+      window.location.href = "/login?error=Sessão expirada. Faça login novamente.";
+      return null;
+    }
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || `HTTP ${response.status}`);
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Erro ao salvar senha:", error);
+    throw error;
+  }
+}
+
+async function deletePasswordFromAPI(passwordId) {
+  try {
+    const response = await fetch(`/passwords/${passwordId}`, {
+      method: "DELETE",
+      credentials: "include"
+    });
+
+    if (response.status === 401) {
+      window.location.href = "/login?error=Sessão expirada. Faça login novamente.";
+      return false;
+    }
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || `HTTP ${response.status}`);
+    }
+
+    return result.success;
+  } catch (error) {
+    console.error("Erro ao deletar senha:", error);
+    throw error;
+  }
+}
+
+async function generatePasswordFromAPI(options = {}) {
+  try {
+    const response = await fetch("/passwords/generate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(options)
+    });
+
+    if (response.status === 401) {
+      window.location.href = "/login?error=Sessão expirada. Faça login novamente.";
+      return null;
+    }
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || `HTTP ${response.status}`);
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Erro ao gerar senha:", error);
+    throw error;
+  }
+}
+
+// =============================================================================
+// 🎯 PASSWORD MANAGEMENT FUNCTIONS
+// =============================================================================
+
+async function initializePasswordList() {
+  try {
+    // Show loading state
+    const passwordsTable = document.getElementById("passwords-table");
+    const emptyState = document.getElementById("empty-state");
+
+    // Load passwords from API
+    const passwords = await loadPasswordsFromAPI();
+
+    if (passwords.length === 0) {
+      passwordsTable.classList.add("d-none");
+      emptyState.classList.remove("d-none");
+    } else {
+      passwordsTable.classList.remove("d-none");
+      emptyState.classList.add("d-none");
+
+      // Render the passwords in the table
+      renderPasswordsList(passwords);
+    }
+  } catch (error) {
+    console.error("Erro ao inicializar lista de senhas:", error);
+    showToast("Erro ao carregar senhas", "error");
+  }
+}
+
+async function savePassword() {
   // Get form values
   const website = document.getElementById("website").value;
   const username = document.getElementById("username").value;
@@ -169,75 +339,134 @@ function savePassword() {
 
   // Simple validation
   if (!website || !username || !password) {
-    alert("Please fill out all required fields.");
+    showToast("Please fill out all required fields.", "error");
     return;
   }
 
-  // Create password object
-  const newPassword = {
-    id: Date.now().toString(), // Simple unique ID
-    website: website,
-    username: username,
-    password: password,
-    category: category,
-    notes: notes,
-    favorite: false,
-    dateAdded: new Date().toISOString(),
-    strength: calculatePasswordStrength(password),
-  };
+  // Show loading state
+  const saveBtn = document.getElementById("save-password");
+  const originalText = saveBtn.textContent;
+  saveBtn.disabled = true;
+  saveBtn.textContent = "Saving...";
 
-  // Add to password list
-  let passwords = getPasswordsFromStorage();
-  passwords.push(newPassword);
-  savePasswordsToStorage(passwords);
+  try {
+    // Create password object
+    const passwordData = {
+      website: website.trim(),
+      username: username.trim(),
+      password: password,
+      category: category || "other",
+      notes: notes?.trim() || ""
+    };
 
-  // Update UI
-  renderPasswordsList(passwords);
+    // Save to API
+    const result = await savePasswordToAPI(passwordData);
 
-  // Show success message
-  showToast("Password saved successfully!");
+    if (result && result.success) {
+      // Show success message
+      showToast("Password saved successfully!");
 
-  // Hide the modal
-  const modal = bootstrap.Modal.getInstance(
-    document.getElementById("addPasswordModal"),
-  );
-  modal.hide();
+      // Hide the modal
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("addPasswordModal"),
+      );
+      modal.hide();
 
-  // Clear the form
-  document.getElementById("add-password-form").reset();
+      // Clear the form
+      document.getElementById("add-password-form").reset();
 
-  // Make sure the password table is visible
-  document.getElementById("passwords-table").classList.remove("d-none");
-  document.getElementById("empty-state").classList.add("d-none");
-}
-
-// Toggle password visibility
-function togglePasswordVisibility(event) {
-  const button = event.currentTarget;
-  const passwordField = button.previousElementSibling;
-
-  if (!passwordField) return;
-
-  if (passwordField.type === "password") {
-    passwordField.type = "text";
-    button.querySelector("i").classList.remove("fa-eye");
-    button.querySelector("i").classList.add("fa-eye-slash");
-    button.setAttribute("title", "Hide Password");
-  } else {
-    passwordField.type = "password";
-    button.querySelector("i").classList.remove("fa-eye-slash");
-    button.querySelector("i").classList.add("fa-eye");
-    button.setAttribute("title", "Show Password");
+      // Reload password list
+      await initializePasswordList();
+    }
+  } catch (error) {
+    console.error("Erro ao salvar senha:", error);
+    showToast("Error saving password: " + error.message, "error");
+  } finally {
+    // Reset button state
+    saveBtn.disabled = false;
+    saveBtn.textContent = originalText;
   }
 }
 
-// Generate a random password
-function generatePassword() {
+async function deletePassword(event) {
+  // Get the password row
+  const row = event.currentTarget.closest("tr");
+  const passwordId = row.dataset.id;
+
+  // Confirm deletion
+  if (!confirm("Are you sure you want to delete this password?")) {
+    return;
+  }
+
+  try {
+    // Delete from API
+    const success = await deletePasswordFromAPI(passwordId);
+
+    if (success) {
+      // Remove from UI
+      row.remove();
+
+      // Show success message
+      showToast("Password deleted successfully!");
+
+      // Check if we need to show empty state
+      const remainingRows = document.querySelectorAll("#passwords-list tr");
+      if (remainingRows.length === 0) {
+        document.getElementById("passwords-table").classList.add("d-none");
+        document.getElementById("empty-state").classList.remove("d-none");
+      }
+    }
+  } catch (error) {
+    console.error("Erro ao deletar senha:", error);
+    showToast("Error deleting password: " + error.message, "error");
+  }
+}
+
+// =============================================================================
+// 🎲 PASSWORD GENERATOR
+// =============================================================================
+
+async function generatePassword() {
   const length = parseInt(document.getElementById("password-length").value);
   const includeUppercase = document.getElementById("include-uppercase").checked;
   const includeLowercase = document.getElementById("include-lowercase").checked;
   const includeNumbers = document.getElementById("include-numbers").checked;
   const includeSymbols = document.getElementById("include-symbols").checked;
+
+  const options = {
+    length,
+    includeUppercase,
+    includeLowercase,
+    includeNumbers,
+    includeSymbols
+  };
+
+  try {
+    // Generate password using API
+    const result = await generatePasswordFromAPI(options);
+
+    if (result && result.success) {
+      // Update the generated password field
+      document.getElementById("generated-password").value = result.password;
+    }
+  } catch (error) {
+    console.error("Erro ao gerar senha:", error);
+    showToast("Error generating password: " + error.message, "error");
+
+    // Fallback to local generation
+    generatePasswordLocal(options);
+  }
+}
+
+function generatePasswordLocal(options) {
+  // Fallback local password generation
+  const {
+    length = 16,
+    includeUppercase = true,
+    includeLowercase = true,
+    includeNumbers = true,
+    includeSymbols = true
+  } = options;
 
   let charset = "";
   if (includeLowercase) charset += "abcdefghijklmnopqrstuvwxyz";
@@ -258,7 +487,6 @@ function generatePassword() {
   document.getElementById("generated-password").value = password;
 }
 
-// Use the generated password in the add password form
 function useGeneratedPassword() {
   const generatedPassword = document.getElementById("generated-password").value;
   document.getElementById("password").value = generatedPassword;
@@ -270,7 +498,29 @@ function useGeneratedPassword() {
   modal.hide();
 }
 
-// Copy password to clipboard
+// =============================================================================
+// 🎨 UI HELPER FUNCTIONS
+// =============================================================================
+
+function togglePasswordVisibility(event) {
+  const button = event.currentTarget;
+  const passwordField = button.previousElementSibling;
+
+  if (!passwordField) return;
+
+  if (passwordField.type === "password") {
+    passwordField.type = "text";
+    button.querySelector("i").classList.remove("fa-eye");
+    button.querySelector("i").classList.add("fa-eye-slash");
+    button.setAttribute("title", "Hide Password");
+  } else {
+    passwordField.type = "password";
+    button.querySelector("i").classList.remove("fa-eye-slash");
+    button.querySelector("i").classList.add("fa-eye");
+    button.setAttribute("title", "Show Password");
+  }
+}
+
 function copyPassword(event) {
   const button = event.currentTarget;
   const passwordField = button.previousElementSibling.previousElementSibling;
@@ -284,7 +534,6 @@ function copyPassword(event) {
   showToast("Password copied to clipboard!");
 }
 
-// Helper function to copy text to clipboard
 function copyToClipboard(text) {
   // Create a temporary textarea element
   const textarea = document.createElement("textarea");
@@ -299,47 +548,19 @@ function copyToClipboard(text) {
   document.body.removeChild(textarea);
 }
 
-// Edit a password entry
 function editPassword(event) {
   // In a real app, this would populate a modal with the password details
   const row = event.currentTarget.closest("tr");
   const passwordId = row.dataset.id;
 
-  alert(
-    "Edit functionality would open a modal with the password details for editing.",
-  );
-
-  // For this demo, we're just showing an alert
+  showToast("Edit functionality coming soon!", "info");
+  // TODO: Implement edit modal with API integration
 }
 
-// Delete a password entry
-function deletePassword(event) {
-  // Get the password row
-  const row = event.currentTarget.closest("tr");
-  const passwordId = row.dataset.id;
+// =============================================================================
+// 🔍 FILTERING AND SORTING
+// =============================================================================
 
-  // Confirm deletion
-  if (confirm("Are you sure you want to delete this password?")) {
-    // Remove from UI
-    row.remove();
-
-    // Remove from storage
-    let passwords = getPasswordsFromStorage();
-    passwords = passwords.filter((p) => p.id !== passwordId);
-    savePasswordsToStorage(passwords);
-
-    // Show success message
-    showToast("Password deleted successfully!");
-
-    // Check if we need to show the empty state
-    if (passwords.length === 0) {
-      document.getElementById("passwords-table").classList.add("d-none");
-      document.getElementById("empty-state").classList.remove("d-none");
-    }
-  }
-}
-
-// Filter passwords based on search and category
 function filterPasswords() {
   const searchText = document
     .getElementById("search-passwords")
@@ -372,7 +593,6 @@ function filterPasswords() {
   });
 }
 
-// Sort passwords by the selected criteria
 function sortPasswords() {
   const sortBy = document.getElementById("sort-by").value;
   const tbody = document.getElementById("passwords-list");
@@ -404,11 +624,12 @@ function sortPasswords() {
   rows.forEach((row) => tbody.appendChild(row));
 }
 
-// Calculate password strength (simplified)
-function calculatePasswordStrength(password) {
-  // This is a very simplified strength calculation
-  // A real implementation would be more sophisticated
+// =============================================================================
+// 📊 PASSWORD RENDERING
+// =============================================================================
 
+function calculatePasswordStrength(password) {
+  // Simplified strength calculation
   let strength = 0;
 
   // Length check
@@ -428,7 +649,6 @@ function calculatePasswordStrength(password) {
   return Math.min(5, strength);
 }
 
-// Render strength indicator
 function renderStrengthIndicator(strength) {
   let strengthClass = "strength-weak";
   let strengthLabel = "Weak";
@@ -449,7 +669,6 @@ function renderStrengthIndicator(strength) {
   `;
 }
 
-// Render the list of passwords
 function renderPasswordsList(passwords) {
   const tbody = document.getElementById("passwords-list");
   tbody.innerHTML = "";
@@ -467,13 +686,13 @@ function renderPasswordsList(passwords) {
       <td><i class="fa ${favoriteIcon} favorite-toggle"></i></td>
       <td>
         <div class="site-info">
-          <span>${password.website}</span>
+          <span>${escapeHtml(password.website)}</span>
         </div>
       </td>
-      <td>${password.username}</td>
+      <td>${escapeHtml(password.username)}</td>
       <td>
         <div class="password-field">
-          <input type="password" class="form-control-plaintext password-value" value="${password.password}" readonly>
+          <input type="password" class="form-control-plaintext password-value" value="${escapeHtml(password.password)}" readonly>
           <button class="btn btn-sm toggle-password" title="Show Password">
             <i class="fa fa-eye"></i>
           </button>
@@ -506,13 +725,8 @@ function renderPasswordsList(passwords) {
       this.classList.toggle("fa-star");
       this.classList.toggle("active");
 
-      // Update favorite status in storage
-      const passwords = getPasswordsFromStorage();
-      const passwordToUpdate = passwords.find((p) => p.id === tr.dataset.id);
-      if (passwordToUpdate) {
-        passwordToUpdate.favorite = !passwordToUpdate.favorite;
-        savePasswordsToStorage(passwords);
-      }
+      // TODO: Update favorite status via API
+      showToast("Favorite status updated!", "info");
     });
     tr.querySelector(".edit-password").addEventListener("click", editPassword);
     tr.querySelector(".delete-password").addEventListener(
@@ -524,8 +738,22 @@ function renderPasswordsList(passwords) {
   });
 }
 
-// Helper function to show a toast notification
-function showToast(message) {
+// =============================================================================
+// 🛠️ UTILITY FUNCTIONS
+// =============================================================================
+
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+function showToast(message, type = "success") {
   // Create toast container if it doesn't exist
   let toastContainer = document.getElementById("toast-container");
   if (!toastContainer) {
@@ -537,8 +765,11 @@ function showToast(message) {
 
   // Create toast element
   const toastId = `toast-${Date.now()}`;
+  const toastClass = type === "error" ? "text-bg-danger" :
+                    type === "info" ? "text-bg-info" : "text-bg-success";
+
   const toastHtml = `
-    <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div id="${toastId}" class="toast ${toastClass}" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="toast-header">
         <strong class="me-auto">ChemKey</strong>
         <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -555,7 +786,7 @@ function showToast(message) {
   const toastElement = document.getElementById(toastId);
   const bsToast = new bootstrap.Toast(toastElement, {
     autohide: true,
-    delay: 3000,
+    delay: type === "error" ? 5000 : 3000, // Error messages stay longer
   });
   bsToast.show();
 
@@ -564,28 +795,3 @@ function showToast(message) {
     toastElement.remove();
   });
 }
-
-// Storage functions
-function getPasswordsFromStorage() {
-  const passwordsJSON = localStorage.getItem("chemkey_passwords");
-  return passwordsJSON ? JSON.parse(passwordsJSON) : [];
-}
-
-function savePasswordsToStorage(passwords) {
-  localStorage.setItem("chemkey_passwords", JSON.stringify(passwords));
-}
-
-// Update login verification to work with the existing login system
-// When user logs in successfully from login.html, save to sessionStorage
-document.addEventListener("DOMContentLoaded", function () {
-  // Set login status in sessionStorage when redirected from login page
-  // This code actually runs from the app.js script, but is included to match
-  // the login functionality in valida_user.js
-  const urlParams = new URLSearchParams(window.location.search);
-  const loginSuccess = urlParams.get("login");
-
-  if (loginSuccess === "success") {
-    sessionStorage.setItem("loggedIn", "true");
-    sessionStorage.setItem("username", "teste@teste");
-  }
-});

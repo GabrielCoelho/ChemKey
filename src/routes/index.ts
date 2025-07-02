@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import path from "path";
 
 const router = Router();
 
@@ -89,6 +90,19 @@ router.get("/health", (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     version: process.env.npm_package_version || "1.0.0",
+  });
+});
+
+// Favicon route
+router.get("/favicon.ico", (req: Request, res: Response) => {
+  res.sendFile(path.join(process.cwd(), "views/src/public/images/logo.png"));
+});
+
+// Catch-all para recursos estáticos que não existem
+router.get("/public/*", (req: Request, res: Response) => {
+  res.status(404).json({
+    error: "Static resource not found",
+    path: req.path,
   });
 });
 
