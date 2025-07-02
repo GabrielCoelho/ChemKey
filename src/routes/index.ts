@@ -8,8 +8,8 @@ router.get("/", (req: Request, res: Response) => {
     title: "ChemKey - Your local PCA Manager",
     description:
       "A private password manager that keeps your digital keys secure and local.",
-    user: req.session.user || null,
-    isLoggedIn: !!req.session.user,
+    user: req.session?.user || null,
+    isLoggedIn: !!req.session?.user,
     currentPage: "home",
   });
 });
@@ -17,7 +17,7 @@ router.get("/", (req: Request, res: Response) => {
 // Página de login
 router.get("/login", (req: Request, res: Response) => {
   // Se já estiver logado, redireciona para o app
-  if (req.session.user) {
+  if (req.session?.user) {
     return res.redirect("/app");
   }
 
@@ -34,7 +34,7 @@ router.get("/login", (req: Request, res: Response) => {
 // Página principal do app (protegida)
 router.get("/app", (req: Request, res: Response) => {
   // Verificar se está logado
-  if (!req.session.user) {
+  if (!req.session?.user) {
     return res.redirect("/login?error=Acesso negado. Faça login primeiro.");
   }
 
@@ -50,7 +50,7 @@ router.get("/app", (req: Request, res: Response) => {
 // Página de registro
 router.get("/register", (req: Request, res: Response) => {
   // Se já estiver logado, redireciona para o app
-  if (req.session.user) {
+  if (req.session?.user) {
     return res.redirect("/app");
   }
 
@@ -62,6 +62,24 @@ router.get("/register", (req: Request, res: Response) => {
     isLoggedIn: false,
     currentPage: "register",
   });
+});
+
+// Rota de teste para forçar erro 404
+router.get("/force-404", (req: Request, res: Response) => {
+  res.status(404).render("pages/404", {
+    title: "Página não encontrada - ChemKey",
+    error: "Esta é uma página de teste 404 através de rota específica.",
+    isLoggedIn: !!req.session?.user,
+    currentPage: "404",
+    user: req.session?.user || null,
+  });
+});
+
+// Rota de teste para forçar erro 500
+router.get("/force-error", (req: Request, res: Response, next) => {
+  // Simular um erro
+  const error = new Error("Este é um erro simulado para teste");
+  next(error);
 });
 
 // Health check

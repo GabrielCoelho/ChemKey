@@ -31,7 +31,7 @@
       <% }) %>
     <% } %>
   </head>
-  <body>
+  <body class="<%= typeof bodyClass !== 'undefined' ? bodyClass : '' %>">
 
     <!-- Header/Navigation -->
     <% if (typeof showNavbar === 'undefined' || showNavbar) { %>

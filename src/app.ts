@@ -37,7 +37,11 @@ class App {
               "https://cdn.jsdelivr.net",
               "https://maxcdn.bootstrapcdn.com",
             ],
-            scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            scriptSrc: [
+              "'self'",
+              "'unsafe-inline'",
+              "https://cdn.jsdelivr.net",
+            ],
             imgSrc: ["'self'", "data:", "https:"],
             fontSrc: ["'self'", "https://maxcdn.bootstrapcdn.com"],
           },
@@ -90,12 +94,61 @@ class App {
     this.app.use("/auth", authRoutes);
     this.app.use("/passwords", passwordRoutes);
 
-    // 404 handler
-    this.app.use("*", (req: Request, res: Response) => {
+    // Rota de teste para página 404
+    this.app.get("/test-404", (req: Request, res: Response) => {
       res.status(404).render("pages/404", {
         title: "Página não encontrada - ChemKey",
-        error: "A página que você procura não existe.",
+        error: "Esta é uma página de teste 404.",
+        isLoggedIn: !!req.session?.user,
+        currentPage: "404",
+        user: req.session?.user || null,
       });
+    });
+
+    // Rota de teste para página de erro
+    this.app.get("/test-error", (req: Request, res: Response) => {
+      res.status(500).render("pages/error", {
+        title: "Erro interno - ChemKey",
+        error: "Este é um erro de teste.",
+        stack:
+          process.env.NODE_ENV === "development"
+            ? "Stack trace de exemplo..."
+            : null,
+        isLoggedIn: !!req.session?.user,
+        currentPage: "error",
+        user: req.session?.user || null,
+      });
+    });
+
+    // 404 handler - DEVE ser o último
+    this.app.use("*", (req: Request, res: Response) => {
+      console.log(
+        `404 - Rota não encontrada: ${req.method} ${req.originalUrl}`,
+      );
+
+      try {
+        res.status(404).render("pages/404", {
+          title: "Página não encontrada - ChemKey",
+          error: "A página que você procura não existe.",
+          isLoggedIn: !!req.session?.user,
+          currentPage: "404",
+          user: req.session?.user || null,
+        });
+      } catch (renderError) {
+        console.error("Erro ao renderizar página 404:", renderError);
+        // Fallback para uma resposta simples se a renderização falhar
+        res.status(404).send(`
+          <!DOCTYPE html>
+          <html>
+          <head><title>404 - Página não encontrada</title></head>
+          <body>
+            <h1>404 - Página não encontrada</h1>
+            <p>A página que você procura não existe.</p>
+            <a href="/">Voltar ao início</a>
+          </body>
+          </html>
+        `);
+      }
     });
   }
 
@@ -104,18 +157,40 @@ class App {
       (err: Error, req: Request, res: Response, next: NextFunction) => {
         console.error("Erro interno:", err);
 
-        if (process.env.NODE_ENV === "development") {
-          res.status(500).render("pages/error", {
-            title: "Erro interno - ChemKey",
-            error: err.message,
-            stack: err.stack,
-          });
-        } else {
-          res.status(500).render("pages/error", {
-            title: "Erro interno - ChemKey",
-            error: "Algo deu errado. Tente novamente mais tarde.",
-            stack: null,
-          });
+        try {
+          if (process.env.NODE_ENV === "development") {
+            res.status(500).render("pages/error", {
+              title: "Erro interno - ChemKey",
+              error: err.message,
+              stack: err.stack,
+              isLoggedIn: !!req.session?.user,
+              currentPage: "error",
+              user: req.session?.user || null,
+            });
+          } else {
+            res.status(500).render("pages/error", {
+              title: "Erro interno - ChemKey",
+              error: "Algo deu errado. Tente novamente mais tarde.",
+              stack: null,
+              isLoggedIn: !!req.session?.user,
+              currentPage: "error",
+              user: req.session?.user || null,
+            });
+          }
+        } catch (renderError) {
+          console.error("Erro ao renderizar página de erro:", renderError);
+          // Fallback para uma resposta simples se a renderização falhar
+          res.status(500).send(`
+            <!DOCTYPE html>
+            <html>
+            <head><title>500 - Erro interno</title></head>
+            <body>
+              <h1>500 - Erro interno do servidor</h1>
+              <p>Algo deu errado. Tente novamente mais tarde.</p>
+              <a href="/">Voltar ao início</a>
+            </body>
+            </html>
+          `);
         }
       },
     );
@@ -131,6 +206,8 @@ class App {
         console.log(`🚀 ChemKey rodando na porta ${this.PORT}`);
         console.log(`📱 Acesse: http://localhost:${this.PORT}`);
         console.log(`🔒 Ambiente: ${process.env.NODE_ENV || "development"}`);
+        console.log(`🧪 Teste 404: http://localhost:${this.PORT}/test-404`);
+        console.log(`🧪 Teste Error: http://localhost:${this.PORT}/test-error`);
       });
     } catch (error) {
       console.error("❌ Erro ao iniciar aplicação:", error);
