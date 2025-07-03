@@ -1064,16 +1064,16 @@
               const result = await response.json();
 
               if (result.success) {
-                showToast('Logout realizado com sucesso!');
+                showToast('Logging out!');
                 setTimeout(() => {
                   window.location.href = result.redirectUrl || '/';
                 }, 1000);
               } else {
-                throw new Error(result.error || 'Erro no logout');
+                throw new Error(result.error || 'Error while logging out');
               }
             } catch (error) {
-              console.error('Erro no logout:', error);
-              showToast('Erro ao fazer logout: ' + error.message, 'error');
+              console.error('Error', error);
+              showToast('Error while logging out: ' + error.message, 'error');
 
               // Reset button state
               this.innerHTML = originalText;
@@ -1214,91 +1214,91 @@
           </div>`
         ).join('');
       }
-
-      async function loadHealthDetails() {
-        // Load weak passwords
-        try {
-          const weakResponse = await fetch('/passwords/health/weak', { credentials: 'include' });
-          const weakResult = await weakResponse.json();
-          if (weakResult.success) {
-            displayWeakPasswords(weakResult.weakPasswords);
-          }
-        } catch (error) {
-          console.error('Erro ao carregar senhas fracas:', error);
-        }
-
-        // Load duplicates
-        try {
-          const dupResponse = await fetch('/passwords/health/duplicates', { credentials: 'include' });
-          const dupResult = await dupResponse.json();
-          if (dupResult.success) {
-            displayDuplicatePasswords(dupResult.duplicates);
-          }
-        } catch (error) {
-          console.error('Erro ao carregar duplicatas:', error);
-        }
-
-        // Load old passwords
-        try {
-          const oldResponse = await fetch('/passwords/health/old', { credentials: 'include' });
-          const oldResult = await oldResponse.json();
-          if (oldResult.success) {
-            displayOldPasswords(oldResult.oldPasswords);
-          }
-        } catch (error) {
-          console.error('Erro ao carregar senhas antigas:', error);
-        }
-      }
-
-      function displayWeakPasswords(weakPasswords) {
-        const container = document.getElementById('weak-passwords-list');
-
-        if (weakPasswords.length === 0) {
-          container.innerHTML = '<div class="alert alert-success"><i class="fa fa-check me-2"></i>Excellent! No duplicate passwords found.</div>';
-        return;
-      }
-
-      container.innerHTML = duplicates.map(dup => `
-        <div class="health-item duplicate">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <strong>Password used ${dup.count} times</strong>
-              <br>
-              <small class="text-muted">
-                ${dup.accounts.map(acc => escapeHtml(acc.website)).join(', ')}
-              </small>
-            </div>
-            <div class="text-end">
-              <span class="badge bg-warning text-dark">${dup.count} accounts</span>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function displayOldPasswords(oldPasswords) {
-      const container = document.getElementById('old-passwords-list');
-
-      if (oldPasswords.length === 0) {
-        container.innerHTML = '<div class="alert alert-success"><i class="fa fa-check me-2"></i>All passwords are recently updated!</div>';
-        return;
-      }
-
-      container.innerHTML = oldPasswords.map(pwd => `
-        <div class="health-item old">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <strong>${escapeHtml(pwd.website)}</strong>
-              <br>
-              <small class="text-muted">${escapeHtml(pwd.username)}</small>
-            </div>
-            <div class="text-end">
-              <span class="badge bg-info">${pwd.daysOld} days old</span>
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
+    //
+    //   async function loadHealthDetails() {
+    //     // Load weak passwords
+    //     try {
+    //       const weakResponse = await fetch('/passwords/health/weak', { credentials: 'include' });
+    //       const weakResult = await weakResponse.json();
+    //       if (weakResult.success) {
+    //         displayWeakPasswords(weakResult.weakPasswords);
+    //       }
+    //     } catch (error) {
+    //       console.error('Erro ao carregar senhas fracas:', error);
+    //     }
+    //
+    //     // Load duplicates
+    //     try {
+    //       const dupResponse = await fetch('/passwords/health/duplicates', { credentials: 'include' });
+    //       const dupResult = await dupResponse.json();
+    //       if (dupResult.success) {
+    //         displayDuplicatePasswords(dupResult.duplicates);
+    //       }
+    //     } catch (error) {
+    //       console.error('Erro ao carregar duplicatas:', error);
+    //     }
+    //
+    //     // Load old passwords
+    //     try {
+    //       const oldResponse = await fetch('/passwords/health/old', { credentials: 'include' });
+    //       const oldResult = await oldResponse.json();
+    //       if (oldResult.success) {
+    //         displayOldPasswords(oldResult.oldPasswords);
+    //       }
+    //     } catch (error) {
+    //       console.error('Erro ao carregar senhas antigas:', error);
+    //     }
+    //   }
+    //
+    //   function displayWeakPasswords(weakPasswords) {
+    //     const container = document.getElementById('weak-passwords-list');
+    //
+    //     if (weakPasswords.length === 0) {
+    //       container.innerHTML = '<div class="alert alert-success"><i class="fa fa-check me-2"></i>Excellent! No duplicate passwords found.</div>';
+    //     return;
+    //   }
+    //
+    //   container.innerHTML = duplicates.map(dup => `
+    //     <div class="health-item duplicate">
+    //       <div class="d-flex justify-content-between align-items-center">
+    //         <div>
+    //           <strong>Password used ${dup.count} times</strong>
+    //           <br>
+    //           <small class="text-muted">
+    //             ${dup.accounts.map(acc => escapeHtml(acc.website)).join(', ')}
+    //           </small>
+    //         </div>
+    //         <div class="text-end">
+    //           <span class="badge bg-warning text-dark">${dup.count} accounts</span>
+    //         </div>
+    //       </div>
+    //     </div>
+    //   `).join('');
+    // }
+    //
+    // function displayOldPasswords(oldPasswords) {
+    //   const container = document.getElementById('old-passwords-list');
+    //
+    //   if (oldPasswords.length === 0) {
+    //     container.innerHTML = '<div class="alert alert-success"><i class="fa fa-check me-2"></i>All passwords are recently updated!</div>';
+    //     return;
+    //   }
+    //
+    //   container.innerHTML = oldPasswords.map(pwd => `
+    //     <div class="health-item old">
+    //       <div class="d-flex justify-content-between align-items-center">
+    //         <div>
+    //           <strong>${escapeHtml(pwd.website)}</strong>
+    //           <br>
+    //           <small class="text-muted">${escapeHtml(pwd.username)}</small>
+    //         </div>
+    //         <div class="text-end">
+    //           <span class="badge bg-info">${pwd.daysOld} days old</span>
+    //         </div>
+    //       </div>
+    //     </div>
+    //   `).join('');
+    // }
 
     // Helper function (if not already defined)
     function escapeHtml(text) {

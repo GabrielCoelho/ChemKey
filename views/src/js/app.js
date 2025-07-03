@@ -491,6 +491,286 @@ function updateHealthDisplay(health) {
 }
 
 // =============================================================================
+// 💊 FUNÇÕES DE PASSWORD HEALTH - VERSÃO SIMPLIFICADA QUE FUNCIONA
+// =============================================================================
+
+async function loadHealthDetails() {
+  console.log("🔍 loadHealthDetails() iniciada - versão auto-suficiente!");
+
+  // 1. Carregar e renderizar senhas fracas
+  try {
+    console.log("📡 Buscando senhas fracas...");
+    const weakResponse = await fetch("/passwords/health/weak", {
+      credentials: "include",
+    });
+    const weakData = await weakResponse.json();
+
+    console.log("📊 Dados weak:", weakData);
+
+    const weakContainer = document.getElementById("weak-passwords-list");
+    if (!weakContainer) {
+      console.error("❌ Elemento weak-passwords-list não encontrado!");
+      return;
+    }
+
+    if (weakData.success) {
+      if (weakData.weakPasswords.length === 0) {
+        weakContainer.innerHTML = `
+          <div class="alert alert-success">
+            <i class="fa fa-check me-2"></i>Great! No weak passwords found.
+          </div>`;
+      } else {
+        let html = "";
+        weakData.weakPasswords.forEach((pwd) => {
+          html += `
+            <div class="health-item p-3 mb-2" style="border-left: 4px solid #dc3545; background: #f8f9fa;">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>${pwd.website}</strong><br>
+                  <small class="text-muted">${pwd.username}</small>
+                </div>
+                <div>
+                  <span class="badge bg-danger">Strength: ${pwd.strength}/5</span>
+                </div>
+              </div>
+            </div>`;
+        });
+        weakContainer.innerHTML = html;
+        console.log("✅ Senhas fracas renderizadas!");
+      }
+    } else {
+      weakContainer.innerHTML = `
+        <div class="alert alert-danger">
+          Erro ao carregar senhas fracas: ${weakData.error}
+        </div>`;
+    }
+  } catch (error) {
+    console.error("❌ Erro ao carregar senhas fracas:", error);
+    const weakContainer = document.getElementById("weak-passwords-list");
+    if (weakContainer) {
+      weakContainer.innerHTML = `
+        <div class="alert alert-danger">
+          Erro ao carregar senhas fracas: ${error.message}
+        </div>`;
+    }
+  }
+
+  // 2. Carregar e renderizar duplicadas
+  try {
+    console.log("📡 Buscando senhas duplicadas...");
+    const dupResponse = await fetch("/passwords/health/duplicates", {
+      credentials: "include",
+    });
+    const dupData = await dupResponse.json();
+
+    console.log("📊 Dados duplicates:", dupData);
+
+    const dupContainer = document.getElementById("duplicate-passwords-list");
+    if (!dupContainer) {
+      console.error("❌ Elemento duplicate-passwords-list não encontrado!");
+      return;
+    }
+
+    if (dupData.success) {
+      if (dupData.duplicates.length === 0) {
+        dupContainer.innerHTML = `
+          <div class="alert alert-success">
+            <i class="fa fa-check me-2"></i>Excellent! No duplicate passwords found.
+          </div>`;
+      } else {
+        let html = "";
+        dupData.duplicates.forEach((dup) => {
+          const websites = dup.accounts.map((acc) => acc.website).join(", ");
+          html += `
+            <div class="health-item p-3 mb-2" style="border-left: 4px solid #ffc107; background: #f8f9fa;">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>Password used ${dup.count} times</strong><br>
+                  <small class="text-muted">${websites}</small>
+                </div>
+                <div>
+                  <span class="badge bg-warning text-dark">${dup.count} accounts</span>
+                </div>
+              </div>
+            </div>`;
+        });
+        dupContainer.innerHTML = html;
+        console.log("✅ Senhas duplicadas renderizadas!");
+      }
+    } else {
+      dupContainer.innerHTML = `
+        <div class="alert alert-danger">
+          Erro ao carregar senhas duplicadas: ${dupData.error}
+        </div>`;
+    }
+  } catch (error) {
+    console.error("❌ Erro ao carregar senhas duplicadas:", error);
+    const dupContainer = document.getElementById("duplicate-passwords-list");
+    if (dupContainer) {
+      dupContainer.innerHTML = `
+        <div class="alert alert-danger">
+          Erro ao carregar senhas duplicadas: ${error.message}
+        </div>`;
+    }
+  }
+
+  // 3. Carregar e renderizar senhas antigas
+  try {
+    console.log("📡 Buscando senhas antigas...");
+    const oldResponse = await fetch("/passwords/health/old", {
+      credentials: "include",
+    });
+    const oldData = await oldResponse.json();
+
+    console.log("📊 Dados old:", oldData);
+
+    const oldContainer = document.getElementById("old-passwords-list");
+    if (!oldContainer) {
+      console.error("❌ Elemento old-passwords-list não encontrado!");
+      return;
+    }
+
+    if (oldData.success) {
+      if (oldData.oldPasswords.length === 0) {
+        oldContainer.innerHTML = `
+          <div class="alert alert-success">
+            <i class="fa fa-check me-2"></i>All passwords are recently updated!
+          </div>`;
+      } else {
+        let html = "";
+        oldData.oldPasswords.forEach((pwd) => {
+          html += `
+            <div class="health-item p-3 mb-2" style="border-left: 4px solid #17a2b8; background: #f8f9fa;">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <strong>${pwd.website}</strong><br>
+                  <small class="text-muted">${pwd.username}</small>
+                </div>
+                <div>
+                  <span class="badge bg-info">${pwd.daysOld} days old</span>
+                </div>
+              </div>
+            </div>`;
+        });
+        oldContainer.innerHTML = html;
+        console.log("✅ Senhas antigas renderizadas!");
+      }
+    } else {
+      oldContainer.innerHTML = `
+        <div class="alert alert-danger">
+          Erro ao carregar senhas antigas: ${oldData.error}
+        </div>`;
+    }
+  } catch (error) {
+    console.error("❌ Erro ao carregar senhas antigas:", error);
+    const oldContainer = document.getElementById("old-passwords-list");
+    if (oldContainer) {
+      oldContainer.innerHTML = `
+        <div class="alert alert-danger">
+          Erro ao carregar senhas antigas: ${error.message}
+        </div>`;
+    }
+  }
+
+  console.log("✅ loadHealthDetails() finalizada com sucesso!");
+}
+
+// =============================================================================
+// 🎯 CONFIGURAÇÃO DE EVENT LISTENERS
+// =============================================================================
+
+function setupHealthEventListeners() {
+  console.log("🎯 Configurando event listeners para health...");
+
+  // Event listener para o clique na aba Health
+  const healthNavLink = document.querySelector('[data-section="health"]');
+  if (healthNavLink) {
+    healthNavLink.addEventListener("click", function () {
+      console.log("🎯 Aba Health clicada!");
+      setTimeout(() => {
+        loadHealthDetails();
+      }, 200);
+    });
+    console.log("✅ Event listener da aba Health configurado!");
+  } else {
+    console.error("❌ Link da aba Health não encontrado!");
+  }
+
+  // Event listener para o botão refresh
+  const refreshHealthBtn = document.getElementById("refresh-health");
+  if (refreshHealthBtn) {
+    refreshHealthBtn.addEventListener("click", function () {
+      console.log("🔄 Refresh Health clicado!");
+      loadHealthDetails();
+    });
+    console.log("✅ Event listener do refresh configurado!");
+  } else {
+    console.error("❌ Botão refresh health não encontrado!");
+  }
+}
+
+// =============================================================================
+// 🧪 FUNÇÃO DE TESTE COMPLETA
+// =============================================================================
+
+function testHealthSystem() {
+  console.log("🧪 Testando sistema de health - versão auto-suficiente...");
+
+  // Verificar se os elementos existem
+  const elements = [
+    "weak-passwords-list",
+    "duplicate-passwords-list",
+    "old-passwords-list",
+  ];
+
+  elements.forEach((id) => {
+    const el = document.getElementById(id);
+    console.log(`📍 ${id}:`, el ? "✅ Encontrado" : "❌ Não encontrado");
+  });
+
+  // Verificar se a aba health existe
+  const healthTab = document.querySelector('[data-section="health"]');
+  console.log(
+    "📍 Health tab:",
+    healthTab ? "✅ Encontrado" : "❌ Não encontrado",
+  );
+
+  // Testar carregamento
+  console.log("🚀 Iniciando teste de carregamento...");
+  loadHealthDetails();
+}
+
+// =============================================================================
+// 🌍 DISPONIBILIZAR FUNÇÕES GLOBALMENTE
+// =============================================================================
+
+// Tornar funções disponíveis globalmente
+window.loadHealthDetails = loadHealthDetails;
+window.testHealthSystem = testHealthSystem;
+window.setupHealthEventListeners = setupHealthEventListeners;
+
+// =============================================================================
+// 🚀 INICIALIZAÇÃO AUTOMÁTICA
+// =============================================================================
+
+// Configurar quando o DOM estiver pronto
+document.addEventListener("DOMContentLoaded", function () {
+  console.log("🚀 DOM carregado - configurando health system...");
+
+  // Configurar event listeners
+  setupHealthEventListeners();
+
+  // Se já estiver na aba health, carregar dados
+  const healthSection = document.getElementById("health-section");
+  if (healthSection && !healthSection.classList.contains("d-none")) {
+    console.log("🎯 Já na aba health - carregando dados...");
+    setTimeout(() => {
+      loadHealthDetails();
+    }, 500);
+  }
+});
+
+// =============================================================================
 // 🎯 PASSWORD MANAGEMENT FUNCTIONS
 // =============================================================================
 

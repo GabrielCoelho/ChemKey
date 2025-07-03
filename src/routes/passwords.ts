@@ -52,6 +52,30 @@ router.post(
 );
 
 /**
+ * GET /passwords/health
+ * Analisar saúde geral das senhas do usuário
+ */
+router.get("/health", PasswordController.getPasswordHealth);
+
+/**
+ * GET /passwords/health/duplicates
+ * Buscar senhas duplicadas
+ */
+router.get("/health/duplicates", PasswordController.getDuplicatePasswords);
+
+/**
+ * GET /passwords/health/weak
+ * Buscar senhas fracas (strength < 3)
+ */
+router.get("/health/weak", PasswordController.getWeakPasswords);
+
+/**
+ * GET /passwords/health/old
+ * Buscar senhas antigas (não alteradas há mais de 90 dias)
+ */
+router.get("/health/old", PasswordController.getOldPasswords);
+
+/**
  * GET /passwords/:id
  * Buscar senha específica
  */
@@ -90,29 +114,5 @@ router.delete(
 //   ValidationMiddleware.validatePasswordId,
 //   PasswordController.toggleFavorite,
 // );
-
-/**
- * GET /passwords/health
- * Analisar saúde geral das senhas do usuário
- */
-router.get("/health", PasswordController.getPasswordHealth);
-
-/**
- * GET /passwords/health/duplicates
- * Buscar senhas duplicadas
- */
-router.get("/health/duplicates", PasswordController.getDuplicatePasswords);
-
-/**
- * GET /passwords/health/weak
- * Buscar senhas fracas (strength < 3)
- */
-router.get("/health/weak", PasswordController.getWeakPasswords);
-
-/**
- * GET /passwords/health/old
- * Buscar senhas antigas (não alteradas há mais de 90 dias)
- */
-router.get("/health/old", PasswordController.getOldPasswords);
 
 export default router;
