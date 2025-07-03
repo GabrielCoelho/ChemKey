@@ -106,7 +106,7 @@
                   </li>
                   <li><hr class="dropdown-divider"></li>
                   <li>
-                    <a class="dropdown-item text-danger" href="#" id="logout-btn">
+                    <a class="dropdown-item text-danger" href="#" id="app-logout-btn">
                       <i class="fa fa-sign-out me-2"></i> Logout
                     </a>
                   </li>
@@ -173,8 +173,8 @@
                 <div class="card-body">
                   <div class="d-flex justify-content-between">
                     <div>
-                      <h6 class="card-title">Favorites</h6>
-                      <h3 class="mb-0" id="favorite-passwords">-</h3>
+                      <h6 class="card-title">Security Score</h6>
+                      <h3 class="mb-0" id="security-score">-</h3>
                     </div>
                     <div class="align-self-center">
                       <i class="fa fa-star fa-2x opacity-75"></i>
@@ -455,19 +455,170 @@
             </div>
           </div>
 
-          <!-- Health Section (Hidden by default) -->
+          <!-- Health Section -->
           <div id="health-section" class="content-section d-none">
             <div class="d-flex justify-content-between align-items-center pt-3 pb-2 mb-3 border-bottom">
               <h1 class="h2 oganesson">
                 <i class="fa fa-heartbeat me-2"></i>Password Health
               </h1>
+              <button
+                type="button"
+                class="btn btn-outline-primary btn-sm"
+                id="refresh-health"
+                title="Refresh health analysis"
+              >
+                <i class="fa fa-refresh"></i> Refresh Analysis
+              </button>
             </div>
 
-            <div class="row">
-              <div class="col-12">
-                <div class="alert alert-info">
-                  <i class="fa fa-info-circle me-2"></i>
-                  <strong>Coming Soon!</strong> Password health analysis will help you identify weak, duplicate, and old passwords that need attention.
+            <!-- Health Loading State -->
+            <div id="health-loading" class="text-center py-5 d-none">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Analyzing passwords...</span>
+              </div>
+              <p class="mt-3 text-muted">Analyzing your password security...</p>
+            </div>
+
+            <!-- Health Dashboard -->
+            <div id="health-dashboard">
+              <!-- Overall Score Card -->
+              <div class="row mb-4">
+                <div class="col-12">
+                  <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                      <div class="row align-items-center">
+                        <div class="col-md-3">
+                          <div id="score-circle" class="score-circle mx-auto mb-3 mb-md-0">
+                            <span id="overall-score-display">-</span>
+                          </div>
+                        </div>
+                        <div class="col-md-9 text-start">
+                          <h3 class="card-title mb-2">Overall Security Score</h3>
+                          <p class="card-text text-muted mb-3" id="score-description">
+                            Analyzing your passwords...
+                          </p>
+                          <div id="recommendations-list">
+                            <!-- Recommendations will be loaded here -->
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Health Metrics Row -->
+              <div class="row mb-4">
+                <div class="col-md-4">
+                  <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between">
+                        <div>
+                          <h6 class="card-title text-danger">
+                            <i class="fa fa-exclamation-triangle me-1"></i>
+                            Weak Passwords
+                          </h6>
+                          <h3 class="mb-0" id="health-weak-count">-</h3>
+                          <small class="text-muted">Strength < 3</small>
+                        </div>
+                        <div class="align-self-center">
+                          <i class="fa fa-exclamation-triangle fa-2x text-danger opacity-50"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between">
+                        <div>
+                          <h6 class="card-title text-warning">
+                            <i class="fa fa-copy me-1"></i>
+                            Duplicate Passwords
+                          </h6>
+                          <h3 class="mb-0" id="health-duplicate-count">-</h3>
+                          <small class="text-muted">Same password used</small>
+                        </div>
+                        <div class="align-self-center">
+                          <i class="fa fa-copy fa-2x text-warning opacity-50"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                      <div class="d-flex justify-content-between">
+                        <div>
+                          <h6 class="card-title text-info">
+                            <i class="fa fa-clock-o me-1"></i>
+                            Old Passwords
+                          </h6>
+                          <h3 class="mb-0" id="health-old-count">-</h3>
+                          <small class="text-muted">Older than 90 days</small>
+                        </div>
+                        <div class="align-self-center">
+                          <i class="fa fa-clock-o fa-2x text-info opacity-50"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Detailed Analysis Tabs -->
+              <div class="row">
+                <div class="col-12">
+                  <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent">
+                      <ul class="nav nav-tabs card-header-tabs" id="health-tabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                          <button class="nav-link active" id="weak-tab" data-bs-toggle="tab" data-bs-target="#weak-panel" type="button" role="tab">
+                            <i class="fa fa-exclamation-triangle me-1"></i>
+                            Weak Passwords
+                          </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                          <button class="nav-link" id="duplicates-tab" data-bs-toggle="tab" data-bs-target="#duplicates-panel" type="button" role="tab">
+                            <i class="fa fa-copy me-1"></i>
+                            Duplicates
+                          </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                          <button class="nav-link" id="old-tab" data-bs-toggle="tab" data-bs-target="#old-panel" type="button" role="tab">
+                            <i class="fa fa-clock-o me-1"></i>
+                            Old Passwords
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                    <div class="card-body">
+                      <div class="tab-content" id="health-tab-content">
+                        <!-- Weak Passwords Panel -->
+                        <div class="tab-pane fade show active" id="weak-panel" role="tabpanel">
+                          <div id="weak-passwords-list">
+                            <p class="text-muted">Loading weak passwords...</p>
+                          </div>
+                        </div>
+
+                        <!-- Duplicates Panel -->
+                        <div class="tab-pane fade" id="duplicates-panel" role="tabpanel">
+                          <div id="duplicate-passwords-list">
+                            <p class="text-muted">Loading duplicate passwords...</p>
+                          </div>
+                        </div>
+
+                        <!-- Old Passwords Panel -->
+                        <div class="tab-pane fade" id="old-panel" role="tabpanel">
+                          <div id="old-passwords-list">
+                            <p class="text-muted">Loading old passwords...</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -758,7 +909,8 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
-    <script src="/public/js/app.js"></script>
+    <!-- 🔧 CORRIGIDO: Referência correta do arquivo JavaScript -->
+    <script src="/src/js/app.js"></script>
 
     <style>
       /* Loading Overlay */
@@ -800,6 +952,36 @@
         opacity: 0.75;
       }
 
+      /* Password Health Styles */
+      .score-circle {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: bold;
+        color: white;
+        position: relative;
+      }
+
+      .score-circle.excellent {
+        background: linear-gradient(135deg, #28a745, #20c997);
+      }
+
+      .score-circle.good {
+        background: linear-gradient(135deg, #17a2b8, #6f42c1);
+      }
+
+      .score-circle.fair {
+        background: linear-gradient(135deg, #ffc107, #fd7e14);
+      }
+
+      .score-circle.poor {
+        background: linear-gradient(135deg, #dc3545, #e83e8c);
+      }
+
       /* Responsive adjustments */
       @media (max-width: 768px) {
         .container-fluid {
@@ -812,6 +994,12 @@
 
         .btn-toolbar .btn-group {
           margin-bottom: 0.5rem;
+        }
+
+        .score-circle {
+          width: 100px;
+          height: 100px;
+          font-size: 1.5rem;
         }
       }
 
@@ -831,12 +1019,73 @@
       .btn-loading {
         pointer-events: none;
       }
+
+      /* Health analysis cards */
+      .health-item {
+        border-left: 4px solid #dc3545;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 0 0.375rem 0.375rem 0;
+      }
+
+      .health-item.duplicate {
+        border-left-color: #ffc107;
+      }
+
+      .health-item.old {
+        border-left-color: #17a2b8;
+      }
     </style>
 
     <script>
-      // Section navigation
+      // 🔧 LOGOUT FUNCIONAL - Script inline para garantir funcionamento
       document.addEventListener('DOMContentLoaded', function() {
-        // Handle section navigation
+        // Logout functionality - ID específico para evitar conflitos
+        const logoutBtn = document.getElementById('app-logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i> Logging out...';
+            this.disabled = true;
+
+            try {
+              const response = await fetch('/auth/logout', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                credentials: 'include'
+              });
+
+              const result = await response.json();
+
+              if (result.success) {
+                showToast('Logout realizado com sucesso!');
+                setTimeout(() => {
+                  window.location.href = result.redirectUrl || '/';
+                }, 1000);
+              } else {
+                throw new Error(result.error || 'Erro no logout');
+              }
+            } catch (error) {
+              console.error('Erro no logout:', error);
+              showToast('Erro ao fazer logout: ' + error.message, 'error');
+
+              // Reset button state
+              this.innerHTML = originalText;
+              this.disabled = false;
+            }
+          });
+        }
+
+        // 💊 PASSWORD HEALTH INITIALIZATION
+        initializePasswordHealth();
+
+        // Section navigation
         const navLinks = document.querySelectorAll('[data-section]');
         const sections = document.querySelectorAll('.content-section');
 
@@ -853,6 +1102,11 @@
             sections.forEach(section => {
               if (section.id === `${targetSection}-section`) {
                 section.classList.remove('d-none');
+
+                // Load health data when health section is shown
+                if (targetSection === 'health') {
+                  loadPasswordHealth();
+                }
               } else {
                 section.classList.add('d-none');
               }
@@ -860,158 +1114,243 @@
           });
         });
 
-        // Clear search functionality
-        document.getElementById('clear-search')?.addEventListener('click', function() {
-          document.getElementById('search-passwords').value = '';
-          // Trigger search to show all passwords
-          const event = new Event('input');
-          document.getElementById('search-passwords').dispatchEvent(event);
-        });
-
-        // Refresh passwords functionality
-        document.getElementById('refresh-passwords')?.addEventListener('click', async function() {
-          const btn = this;
-          const originalHtml = btn.innerHTML;
-
-          btn.disabled = true;
-          btn.innerHTML = '<i class="fa fa-spin fa-refresh"></i>';
-
-          try {
-            await initializePasswordList();
-            showToast('Passwords refreshed successfully!');
-          } catch (error) {
-            showToast('Error refreshing passwords: ' + error.message, 'error');
-          } finally {
-            btn.disabled = false;
-            btn.innerHTML = originalHtml;
-          }
-        });
-
-        // Standalone password generator
-        const standaloneElements = {
-          generateBtn: document.getElementById('generate-standalone-password'),
-          passwordInput: document.getElementById('standalone-generated-password'),
-          copyBtn: document.getElementById('copy-standalone-password'),
-          lengthSlider: document.getElementById('standalone-password-length'),
-          lengthValue: document.getElementById('standalone-length-value'),
-          includeUppercase: document.getElementById('standalone-include-uppercase'),
-          includeLowercase: document.getElementById('standalone-include-lowercase'),
-          includeNumbers: document.getElementById('standalone-include-numbers'),
-          includeSymbols: document.getElementById('standalone-include-symbols')
-        };
-
-        // Standalone generator events
-        if (standaloneElements.generateBtn) {
-          standaloneElements.generateBtn.addEventListener('click', generateStandalonePassword);
-
-          standaloneElements.lengthSlider.addEventListener('input', function() {
-            standaloneElements.lengthValue.textContent = this.value;
-          });
-
-          standaloneElements.copyBtn.addEventListener('click', function() {
-            copyToClipboard(standaloneElements.passwordInput.value);
-            showToast('Password copied to clipboard!');
-          });
-
-          // Generate initial password
-          generateStandalonePassword();
+        // Refresh health analysis
+        const refreshHealthBtn = document.getElementById('refresh-health');
+        if (refreshHealthBtn) {
+          refreshHealthBtn.addEventListener('click', loadPasswordHealth);
         }
-
-        // Password strength indicator in add modal
-        const passwordInput = document.getElementById('password');
-        const strengthIndicator = document.getElementById('password-strength-indicator');
-        const strengthBar = document.getElementById('password-strength-bar');
-        const strengthText = document.getElementById('password-strength-text');
-
-        if (passwordInput) {
-          passwordInput.addEventListener('input', function() {
-            const password = this.value;
-
-            if (password.length === 0) {
-              strengthIndicator.classList.add('d-none');
-              return;
-            }
-
-            strengthIndicator.classList.remove('d-none');
-
-            const strength = calculatePasswordStrength(password);
-            const percentage = (strength / 5) * 100;
-
-            strengthBar.style.width = percentage + '%';
-            strengthBar.className = 'progress-bar';
-
-            if (strength >= 4) {
-              strengthBar.classList.add('bg-success');
-              strengthText.textContent = 'Strong';
-            } else if (strength >= 2) {
-              strengthBar.classList.add('bg-warning');
-              strengthText.textContent = 'Medium';
-            } else {
-              strengthBar.classList.add('bg-danger');
-              strengthText.textContent = 'Weak';
-            }
-          });
-        }
-
-        async function generateStandalonePassword() {
-          const options = {
-            length: parseInt(standaloneElements.lengthSlider.value),
-            includeUppercase: standaloneElements.includeUppercase.checked,
-            includeLowercase: standaloneElements.includeLowercase.checked,
-            includeNumbers: standaloneElements.includeNumbers.checked,
-            includeSymbols: standaloneElements.includeSymbols.checked
-          };
-
-          try {
-            const result = await generatePasswordFromAPI(options);
-            if (result && result.success) {
-              standaloneElements.passwordInput.value = result.password;
-            }
-          } catch (error) {
-            // Fallback to local generation
-            generatePasswordLocal(options);
-            standaloneElements.passwordInput.value = document.getElementById('generated-password').value;
-          }
-        }
-
-        // Update statistics
-        function updateStatistics(passwords) {
-          const total = passwords.length;
-          const strong = passwords.filter(p => p.strength >= 4).length;
-          const weak = passwords.filter(p => p.strength < 2).length;
-          const favorites = passwords.filter(p => p.favorite).length;
-
-          document.getElementById('total-passwords').textContent = total;
-          document.getElementById('strong-passwords').textContent = strong;
-          document.getElementById('weak-passwords').textContent = weak;
-          document.getElementById('favorite-passwords').textContent = favorites;
-        }
-
-        // Override the original renderPasswordsList to include stats update
-        const originalRenderPasswordsList = window.renderPasswordsList;
-        window.renderPasswordsList = function(passwords) {
-          originalRenderPasswordsList(passwords);
-          updateStatistics(passwords);
-        };
-
-        // Change password functionality
-        document.getElementById('change-password-link')?.addEventListener('click', function(e) {
-          e.preventDefault();
-          showToast('Change password functionality coming soon!', 'info');
-        });
-
-        // Export data functionality
-        document.getElementById('export-data-link')?.addEventListener('click', function(e) {
-          e.preventDefault();
-          showToast('Export functionality coming soon!', 'info');
-        });
-
-        // Import data functionality
-        document.getElementById('import-data-link')?.addEventListener('click', function(e) {
-          e.preventDefault();
-          showToast('Import functionality coming soon!', 'info');
-        });
       });
+
+      // 💊 PASSWORD HEALTH FUNCTIONS
+      function initializePasswordHealth() {
+        // Initialize health section with empty state
+        updateHealthDisplay({
+          totalPasswords: 0,
+          strongPasswords: 0,
+          weakPasswords: 0,
+          duplicatePasswords: 0,
+          oldPasswords: 0,
+          overallScore: 100,
+          recommendations: ['Loading...']
+        });
+      }
+
+      async function loadPasswordHealth() {
+        const healthLoading = document.getElementById('health-loading');
+        const healthDashboard = document.getElementById('health-dashboard');
+
+        // Show loading state
+        healthLoading.classList.remove('d-none');
+        healthDashboard.style.opacity = '0.5';
+
+        try {
+          const response = await fetch('/passwords/health', {
+            method: 'GET',
+            credentials: 'include'
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const result = await response.json();
+
+          if (result.success) {
+            updateHealthDisplay(result.health);
+            await loadHealthDetails();
+          } else {
+            throw new Error(result.error || 'Erro ao carregar análise');
+          }
+
+        } catch (error) {
+          console.error('Erro ao carregar health:', error);
+          showToast('Erro ao carregar análise de saúde: ' + error.message, 'error');
+        } finally {
+          healthLoading.classList.add('d-none');
+          healthDashboard.style.opacity = '1';
+        }
+      }
+
+      function updateHealthDisplay(health) {
+        // Update overall score
+        const scoreDisplay = document.getElementById('overall-score-display');
+        const scoreCircle = document.getElementById('score-circle');
+        const scoreDescription = document.getElementById('score-description');
+
+        scoreDisplay.textContent = health.overallScore;
+
+        // Update score circle color based on score
+        scoreCircle.className = 'score-circle mx-auto mb-3 mb-md-0';
+        if (health.overallScore >= 80) {
+          scoreCircle.classList.add('excellent');
+          scoreDescription.textContent = 'Excellent! Your passwords are very secure.';
+        } else if (health.overallScore >= 60) {
+          scoreCircle.classList.add('good');
+          scoreDescription.textContent = 'Good security level with room for improvement.';
+        } else if (health.overallScore >= 40) {
+          scoreCircle.classList.add('fair');
+          scoreDescription.textContent = 'Fair security. Several improvements needed.';
+        } else {
+          scoreCircle.classList.add('poor');
+          scoreDescription.textContent = 'Poor security. Immediate action required.';
+        }
+
+        // Update metrics
+        document.getElementById('health-weak-count').textContent = health.weakPasswords;
+        document.getElementById('health-duplicate-count').textContent = health.duplicatePasswords;
+        document.getElementById('health-old-count').textContent = health.oldPasswords;
+
+        // Update main stats
+        document.getElementById('total-passwords').textContent = health.totalPasswords;
+        document.getElementById('strong-passwords').textContent = health.strongPasswords;
+        document.getElementById('weak-passwords').textContent = health.weakPasswords;
+        document.getElementById('security-score').textContent = health.overallScore;
+
+        // Update recommendations
+        const recommendationsList = document.getElementById('recommendations-list');
+        recommendationsList.innerHTML = health.recommendations.map(rec =>
+          `<div class="alert alert-info alert-sm mb-2">
+            <i class="fa fa-lightbulb-o me-2"></i>${rec}
+          </div>`
+        ).join('');
+      }
+
+      async function loadHealthDetails() {
+        // Load weak passwords
+        try {
+          const weakResponse = await fetch('/passwords/health/weak', { credentials: 'include' });
+          const weakResult = await weakResponse.json();
+          if (weakResult.success) {
+            displayWeakPasswords(weakResult.weakPasswords);
+          }
+        } catch (error) {
+          console.error('Erro ao carregar senhas fracas:', error);
+        }
+
+        // Load duplicates
+        try {
+          const dupResponse = await fetch('/passwords/health/duplicates', { credentials: 'include' });
+          const dupResult = await dupResponse.json();
+          if (dupResult.success) {
+            displayDuplicatePasswords(dupResult.duplicates);
+          }
+        } catch (error) {
+          console.error('Erro ao carregar duplicatas:', error);
+        }
+
+        // Load old passwords
+        try {
+          const oldResponse = await fetch('/passwords/health/old', { credentials: 'include' });
+          const oldResult = await oldResponse.json();
+          if (oldResult.success) {
+            displayOldPasswords(oldResult.oldPasswords);
+          }
+        } catch (error) {
+          console.error('Erro ao carregar senhas antigas:', error);
+        }
+      }
+
+      function displayWeakPasswords(weakPasswords) {
+        const container = document.getElementById('weak-passwords-list');
+
+        if (weakPasswords.length === 0) {
+          container.innerHTML = '<div class="alert alert-success"><i class="fa fa-check me-2"></i>Excellent! No duplicate passwords found.</div>';
+        return;
+      }
+
+      container.innerHTML = duplicates.map(dup => `
+        <div class="health-item duplicate">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong>Password used ${dup.count} times</strong>
+              <br>
+              <small class="text-muted">
+                ${dup.accounts.map(acc => escapeHtml(acc.website)).join(', ')}
+              </small>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-warning text-dark">${dup.count} accounts</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function displayOldPasswords(oldPasswords) {
+      const container = document.getElementById('old-passwords-list');
+
+      if (oldPasswords.length === 0) {
+        container.innerHTML = '<div class="alert alert-success"><i class="fa fa-check me-2"></i>All passwords are recently updated!</div>';
+        return;
+      }
+
+      container.innerHTML = oldPasswords.map(pwd => `
+        <div class="health-item old">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong>${escapeHtml(pwd.website)}</strong>
+              <br>
+              <small class="text-muted">${escapeHtml(pwd.username)}</small>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-info">${pwd.daysOld} days old</span>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Helper function (if not already defined)
+    function escapeHtml(text) {
+      const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+      };
+      return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
+
+    // Helper function for toast notifications (if not already defined)
+    function showToast(message, type = "success") {
+      let toastContainer = document.getElementById("toast-container");
+      if (!toastContainer) {
+        toastContainer = document.createElement("div");
+        toastContainer.id = "toast-container";
+        toastContainer.className = "position-fixed bottom-0 end-0 p-3";
+        document.body.appendChild(toastContainer);
+      }
+
+      const toastId = `toast-${Date.now()}`;
+      const toastClass = type === "error" ? "text-bg-danger" :
+                        type === "info" ? "text-bg-info" : "text-bg-success";
+
+      const toastHtml = `
+        <div id="${toastId}" class="toast ${toastClass}" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="toast-header">
+            <strong class="me-auto">ChemKey</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+          <div class="toast-body">
+            ${message}
+          </div>
+        </div>
+      `;
+
+      toastContainer.insertAdjacentHTML("beforeend", toastHtml);
+
+      const toastElement = document.getElementById(toastId);
+      const bsToast = new bootstrap.Toast(toastElement, {
+        autohide: true,
+        delay: type === "error" ? 5000 : 3000,
+      });
+      bsToast.show();
+
+      toastElement.addEventListener("hidden.bs.toast", function () {
+        toastElement.remove();
+      });
+    }
     </script>
   </body>
 </html>

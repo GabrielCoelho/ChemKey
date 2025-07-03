@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Password from "../entities/Password";
 import User from "../entities/User";
 import CryptoService, { EncryptedData } from "../services/CryptoService";
+import { Op } from "sequelize";
 
 // Extend session interface to include masterKey
 declare module "express-session" {
@@ -643,6 +644,350 @@ export class PasswordController {
   //     });
   //   }
   // }
+
+  /**
+   * GET /passwords/health - Análise completa de saúde das senhas
+   */
+  public static async getPasswordHealth(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    try {
+      const userId = req.session?.user?.id;
+      const masterKey = req.session?.masterKey;
+
+      if (!userId || !masterKey) {
+        return res.status(401).json({
+          success: false,
+          error: "Usuário não autenticado.",
+        });
+      }
+
+      // Buscar todas as senhas do usuário
+      const passwords = await Password.findByUserId(userId);
+
+      if (passwords.length === 0) {
+        return res.json({
+          success: true,
+          health: {
+            totalPasswords: 0,
+            strongPasswords: 0,
+            weakPasswords: 0,
+            duplicatePasswords: 0,
+            oldPasswords: 0,
+            overallScore: 100,
+            recommendations: ["Adicione sua primeira senha para começar!"],
+          },
+        });
+      }
+
+      // Descriptografar senhas para análise
+      const decryptedPasswords = await Promise.all(
+        passwords.map(async (passwordEntry) => {
+          try {
+            const encryptedData: EncryptedData = JSON.parse(
+              passwordEntry.encrypted_password,
+            );
+            const decryptedPassword = await CryptoService.decryptPassword(
+              encryptedData,
+              masterKey,
+            );
+
+            return {
+              id: passwordEntry.id,
+              password: decryptedPassword,
+              strength: passwordEntry.strength,
+              website: passwordEntry.website,
+              createdAt: passwordEntry.created_at,
+              updatedAt: passwordEntry.updated_at,
+            };
+          } catch (error) {
+            return null;
+          }
+        }),
+      );
+
+      const validPasswords = decryptedPasswords.filter((p) => p !== null);
+
+      // Análises
+      const totalPasswords = validPasswords.length;
+      const strongPasswords = validPasswords.filter(
+        (p) => p.strength >= 4,
+      ).length;
+      const weakPasswords = validPasswords.filter((p) => p.strength < 3).length;
+
+      // Detectar duplicatas
+      const passwordMap = new Map();
+      const duplicates: Array<{
+        password: string;
+        websites: string[];
+      }> = [];
+      validPasswords.forEach((p) => {
+        if (passwordMap.has(p.password)) {
+          duplicates.push({
+            password: p.password,
+            websites: [passwordMap.get(p.password).website, p.website],
+          });
+        } else {
+          passwordMap.set(p.password, p);
+        }
+      });
+
+      // Detectar senhas antigas (mais de 90 dias)
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+      const oldPasswords = validPasswords.filter(
+        (p) => new Date(p.updatedAt) < ninetyDaysAgo,
+      ).length;
+
+      // Calcular score geral (0-100)
+      const strongRatio = strongPasswords / totalPasswords;
+      const weakPenalty = (weakPasswords / totalPasswords) * 30;
+      const duplicatePenalty = (duplicates.length / totalPasswords) * 25;
+      const oldPenalty = (oldPasswords / totalPasswords) * 20;
+
+      const overallScore = Math.max(
+        0,
+        Math.min(
+          100,
+          strongRatio * 100 - weakPenalty - duplicatePenalty - oldPenalty,
+        ),
+      );
+
+      // Gerar recomendações
+      const recommendations = [];
+      if (weakPasswords > 0) {
+        recommendations.push(
+          `${weakPasswords} senha(s) fraca(s) devem ser fortalecidas`,
+        );
+      }
+      if (duplicates.length > 0) {
+        recommendations.push(
+          `${duplicates.length} senha(s) duplicada(s) encontrada(s)`,
+        );
+      }
+      if (oldPasswords > 0) {
+        recommendations.push(
+          `${oldPasswords} senha(s) não alterada(s) há mais de 90 dias`,
+        );
+      }
+      if (recommendations.length === 0) {
+        recommendations.push("Excelente! Suas senhas estão seguras.");
+      }
+
+      return res.json({
+        success: true,
+        health: {
+          totalPasswords,
+          strongPasswords,
+          weakPasswords,
+          duplicatePasswords: duplicates.length,
+          oldPasswords,
+          overallScore: Math.round(overallScore),
+          recommendations,
+          duplicates: duplicates.slice(0, 5), // Primeiras 5 duplicatas
+          analysis: {
+            strengthDistribution: {
+              weak: weakPasswords,
+              medium: totalPasswords - strongPasswords - weakPasswords,
+              strong: strongPasswords,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Erro na análise de saúde:", error);
+      return res.status(500).json({
+        success: false,
+        error: "Erro ao analisar saúde das senhas.",
+      });
+    }
+  }
+
+  /**
+   * GET /passwords/health/duplicates - Buscar senhas duplicadas
+   */
+  public static async getDuplicatePasswords(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    try {
+      const userId = req.session?.user?.id;
+      const masterKey = req.session?.masterKey;
+
+      if (!userId || !masterKey) {
+        return res.status(401).json({
+          success: false,
+          error: "Usuário não autenticado.",
+        });
+      }
+
+      const passwords = await Password.findByUserId(userId);
+
+      // Descriptografar e agrupar por senha
+      const passwordGroups = new Map();
+
+      for (const passwordEntry of passwords) {
+        try {
+          const encryptedData: EncryptedData = JSON.parse(
+            passwordEntry.encrypted_password,
+          );
+          const decryptedPassword = await CryptoService.decryptPassword(
+            encryptedData,
+            masterKey,
+          );
+
+          if (passwordGroups.has(decryptedPassword)) {
+            passwordGroups.get(decryptedPassword).push({
+              id: passwordEntry.id,
+              website: passwordEntry.website,
+              username: passwordEntry.username,
+            });
+          } else {
+            passwordGroups.set(decryptedPassword, [
+              {
+                id: passwordEntry.id,
+                website: passwordEntry.website,
+                username: passwordEntry.username,
+              },
+            ]);
+          }
+        } catch (error) {
+          continue;
+        }
+      }
+
+      // Filtrar apenas grupos com mais de 1 item (duplicatas)
+      const duplicates = Array.from(passwordGroups.entries())
+        .filter(([password, group]) => group.length > 1)
+        .map(([password, group]) => ({
+          password: password.substring(0, 3) + "*".repeat(password.length - 3),
+          count: group.length,
+          accounts: group,
+        }));
+
+      return res.json({
+        success: true,
+        duplicates,
+        totalDuplicateGroups: duplicates.length,
+        totalDuplicatePasswords: duplicates.reduce(
+          (sum, d) => sum + d.count,
+          0,
+        ),
+      });
+    } catch (error) {
+      console.error("Erro ao buscar duplicatas:", error);
+      return res.status(500).json({
+        success: false,
+        error: "Erro ao buscar senhas duplicadas.",
+      });
+    }
+  }
+
+  /**
+   * GET /passwords/health/weak - Buscar senhas fracas
+   */
+  public static async getWeakPasswords(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    try {
+      const userId = req.session?.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          error: "Usuário não autenticado.",
+        });
+      }
+
+      const weakPasswords = await Password.findAll({
+        where: {
+          user_id: userId,
+          strength: {
+            [Op.lt]: 3,
+          },
+        },
+        attributes: ["id", "website", "username", "strength", "updated_at"],
+        order: [
+          ["strength", "ASC"],
+          ["updated_at", "DESC"],
+        ],
+      });
+
+      return res.json({
+        success: true,
+        weakPasswords: weakPasswords.map((p) => ({
+          id: p.id,
+          website: p.website,
+          username: p.username,
+          strength: p.strength,
+          lastUpdated: p.updated_at,
+        })),
+        count: weakPasswords.length,
+      });
+    } catch (error) {
+      console.error("Erro ao buscar senhas fracas:", error);
+      return res.status(500).json({
+        success: false,
+        error: "Erro ao buscar senhas fracas.",
+      });
+    }
+  }
+
+  /**
+   * GET /passwords/health/old - Buscar senhas antigas
+   */
+  public static async getOldPasswords(
+    req: Request,
+    res: Response,
+  ): Promise<Response> {
+    try {
+      const userId = req.session?.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          error: "Usuário não autenticado.",
+        });
+      }
+
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+
+      const oldPasswords = await Password.findAll({
+        where: {
+          user_id: userId,
+          updated_at: {
+            [Op.lt]: ninetyDaysAgo,
+          },
+        },
+        attributes: ["id", "website", "username", "updated_at"],
+        order: [["updated_at", "ASC"]],
+      });
+
+      return res.json({
+        success: true,
+        oldPasswords: oldPasswords.map((p) => ({
+          id: p.id,
+          website: p.website,
+          username: p.username,
+          lastUpdated: p.updated_at,
+          daysOld: Math.floor(
+            (new Date().getTime() - new Date(p.updated_at).getTime()) /
+              (1000 * 60 * 60 * 24),
+          ),
+        })),
+        count: oldPasswords.length,
+      });
+    } catch (error) {
+      console.error("Erro ao buscar senhas antigas:", error);
+      return res.status(500).json({
+        success: false,
+        error: "Erro ao buscar senhas antigas.",
+      });
+    }
+  }
 }
 
 export default PasswordController;
