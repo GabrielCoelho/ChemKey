@@ -1164,7 +1164,7 @@
 
         } catch (error) {
           console.error('Erro ao carregar health:', error);
-          showToast('Erro ao carregar análise de saúde: ' + error.message, 'error');
+          showToast('Error loading health analysis: ' + error.message, 'error');
         } finally {
           healthLoading.classList.add('d-none');
           healthDashboard.style.opacity = '1';

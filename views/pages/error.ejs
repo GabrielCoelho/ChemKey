@@ -26,17 +26,17 @@
           <div class="col-md-8 col-lg-6">
             <div class="error-container">
               <h1 class="display-1 text-danger mb-4 oganesson">500</h1>
-              <h2 class="h3 mb-4">Oops! Algo deu errado</h2>
+              <h2 class="h3 mb-4">Oops! Something went wrong</h2>
 
               <div class="alert alert-danger" role="alert">
                 <i class="fa fa-exclamation-triangle me-2"></i>
-                <strong>Erro:</strong> <%= locals.error || 'Erro interno do servidor' %>
+                <strong>Erro:</strong> <%= locals.error || 'Internal Error' %>
               </div>
 
               <% if (locals.stack) { %>
                 <div class="mt-4">
                   <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#errorStack" aria-expanded="false" aria-controls="errorStack">
-                    <i class="fa fa-code me-1"></i> Ver Detalhes Técnicos
+                    <i class="fa fa-code me-1"></i> See Technical details
                   </button>
 
                   <div class="collapse mt-3" id="errorStack">
@@ -55,14 +55,14 @@
                   <i class="fa fa-home me-1"></i> Voltar ao Início
                 </a>
                 <button onclick="window.history.back()" class="btn btn-outline-secondary">
-                  <i class="fa fa-arrow-left me-1"></i> Página Anterior
+                  <i class="fa fa-arrow-left me-1"></i> Previous page
                 </button>
               </div>
 
               <div class="mt-4 text-muted">
                 <p class="small">
-                  Se o problema persistir, entre em contato com o suporte através da
-                  <a href="/#about">página de contato</a>.
+                  If the problem persists, please refer to our
+                  <a href="https://github.com/GabrielCoelho/ChemKey/issues">issues page</a>.
                 </p>
               </div>
             </div>

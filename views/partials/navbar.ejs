@@ -77,10 +77,10 @@ document.getElementById('logout-btn')?.addEventListener('click', async function(
     if (result.success) {
       window.location.href = result.redirectUrl || '/';
     } else {
-      alert('Erro ao fazer logout: ' + result.error);
+      alert('Error while logging out: ' + result.error);
     }
   } catch (error) {
-    console.error('Erro no logout:', error);
+    console.error('Error:', error);
     alert('Erro ao fazer logout. Tente novamente.');
   }
 });

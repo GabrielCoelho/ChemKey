@@ -32,14 +32,14 @@ export class PasswordController {
       if (!userId) {
         return res.status(401).json({
           success: false,
-          error: "Usuário não autenticado.",
+          error: "User not authenticated",
         });
       }
 
       if (!masterKey) {
         return res.status(401).json({
           success: false,
-          error: "Master key não encontrada. Faça login novamente.",
+          error: "Master key not found. Please log in again.",
         });
       }
 
@@ -97,7 +97,7 @@ export class PasswordController {
       console.error("Erro ao buscar senhas:", error);
       return res.status(500).json({
         success: false,
-        error: "Erro interno do servidor.",
+        error: "Internal Error",
       });
     }
   }
@@ -117,14 +117,14 @@ export class PasswordController {
       if (!userId) {
         return res.status(401).json({
           success: false,
-          error: "Usuário não autenticado.",
+          error: "User not authenticated",
         });
       }
 
       if (!masterKey) {
         return res.status(401).json({
           success: false,
-          error: "Master key não encontrada. Faça login novamente.",
+          error: "Master key not found, please log in again.",
         });
       }
 
@@ -132,7 +132,7 @@ export class PasswordController {
       if (!website || !username || !password) {
         return res.status(400).json({
           success: false,
-          error: "Website, username e password são obrigatórios.",
+          error: "Website, username and passwords are obligatory.",
         });
       }
 
@@ -160,7 +160,7 @@ export class PasswordController {
 
       return res.status(201).json({
         success: true,
-        message: "Senha salva com sucesso!",
+        message: "Password chemically secured!",
         password: {
           id: newPassword.id,
           website: newPassword.website,
@@ -192,7 +192,7 @@ export class PasswordController {
 
       return res.status(500).json({
         success: false,
-        error: "Erro ao salvar senha.",
+        error: "Error securing password",
       });
     }
   }
@@ -214,14 +214,14 @@ export class PasswordController {
       if (!userId) {
         return res.status(401).json({
           success: false,
-          error: "Usuário não autenticado.",
+          error: "User not authenticated",
         });
       }
 
       if (!masterKey) {
         return res.status(401).json({
           success: false,
-          error: "Master key não encontrada. Faça login novamente.",
+          error: "MasterKey not found, please log in again.",
         });
       }
 
@@ -244,7 +244,7 @@ export class PasswordController {
       if (!existingPassword) {
         return res.status(404).json({
           success: false,
-          error: "Senha não encontrada.",
+          error: "Password not found.",
         });
       }
 
@@ -275,7 +275,7 @@ export class PasswordController {
 
       return res.json({
         success: true,
-        message: "Senha atualizada com sucesso!",
+        message: "Password updated",
         password: {
           id: existingPassword.id,
           website: existingPassword.website,
@@ -307,7 +307,7 @@ export class PasswordController {
 
       return res.status(500).json({
         success: false,
-        error: "Erro ao atualizar senha.",
+        error: "Error updating password",
       });
     }
   }
@@ -326,7 +326,7 @@ export class PasswordController {
       if (!userId) {
         return res.status(401).json({
           success: false,
-          error: "Usuário não autenticado.",
+          error: "User not authenticated",
         });
       }
 
@@ -334,7 +334,7 @@ export class PasswordController {
       if (!id || isNaN(parseInt(id))) {
         return res.status(400).json({
           success: false,
-          error: "ID inválido.",
+          error: "ID invalid.",
         });
       }
 
@@ -349,19 +349,19 @@ export class PasswordController {
       if (deletedCount === 0) {
         return res.status(404).json({
           success: false,
-          error: "Senha não encontrada.",
+          error: "Password not found",
         });
       }
 
       return res.json({
         success: true,
-        message: "Senha deletada com sucesso!",
+        message: "Acid throwed upon your password. It is now deleted.",
       });
     } catch (error) {
       console.error("Erro ao deletar senha:", error);
       return res.status(500).json({
         success: false,
-        error: "Erro ao deletar senha.",
+        error: "Error deleting",
       });
     }
   }
@@ -381,14 +381,14 @@ export class PasswordController {
       if (!userId) {
         return res.status(401).json({
           success: false,
-          error: "Usuário não autenticado.",
+          error: "User not authenticated",
         });
       }
 
       if (!masterKey) {
         return res.status(401).json({
           success: false,
-          error: "Master key não encontrada. Faça login novamente.",
+          error: "Master key not found, please log in again.",
         });
       }
 
@@ -422,7 +422,7 @@ export class PasswordController {
       if (!passwordEntry) {
         return res.status(404).json({
           success: false,
-          error: "Senha não encontrada.",
+          error: "Password not found.",
         });
       }
 
@@ -457,7 +457,7 @@ export class PasswordController {
       console.error("Erro ao buscar senha:", error);
       return res.status(500).json({
         success: false,
-        error: "Erro ao buscar senha.",
+        error: "Error loading passwords",
       });
     }
   }
@@ -483,7 +483,7 @@ export class PasswordController {
       if (length < 6 || length > 64) {
         return res.status(400).json({
           success: false,
-          error: "Comprimento deve estar entre 6 e 64 caracteres.",
+          error: "Length must be between 6 and 64 characters",
         });
       }
 
@@ -516,7 +516,7 @@ export class PasswordController {
       console.error("Erro ao gerar senha:", error);
       return res.status(500).json({
         success: false,
-        error: "Erro ao gerar senha.",
+        error: "Error generating password",
       });
     }
   }
@@ -659,7 +659,7 @@ export class PasswordController {
       if (!userId || !masterKey) {
         return res.status(401).json({
           success: false,
-          error: "Usuário não autenticado.",
+          error: "User not authenticated",
         });
       }
 
@@ -676,7 +676,7 @@ export class PasswordController {
             duplicatePasswords: 0,
             oldPasswords: 0,
             overallScore: 100,
-            recommendations: ["Adicione sua primeira senha para começar!"],
+            recommendations: ["Add your first password"],
           },
         });
       }
@@ -758,21 +758,21 @@ export class PasswordController {
       const recommendations = [];
       if (weakPasswords > 0) {
         recommendations.push(
-          `${weakPasswords} senha(s) fraca(s) devem ser fortalecidas`,
+          `${weakPasswords} weak password(s) must be strengthened`,
         );
       }
       if (duplicates.length > 0) {
         recommendations.push(
-          `${duplicates.length} senha(s) duplicada(s) encontrada(s)`,
+          `${duplicates.length} duplicated passwords found.`,
         );
       }
       if (oldPasswords > 0) {
         recommendations.push(
-          `${oldPasswords} senha(s) não alterada(s) há mais de 90 dias`,
+          `${oldPasswords} unaltered passwords over 90 days`,
         );
       }
       if (recommendations.length === 0) {
-        recommendations.push("Excelente! Suas senhas estão seguras.");
+        recommendations.push("Bravo!! All your passwords are strong.");
       }
 
       return res.json({
@@ -799,7 +799,7 @@ export class PasswordController {
       console.error("Erro na análise de saúde:", error);
       return res.status(500).json({
         success: false,
-        error: "Erro ao analisar saúde das senhas.",
+        error: "Error loading analysis",
       });
     }
   }
@@ -818,7 +818,7 @@ export class PasswordController {
       if (!userId || !masterKey) {
         return res.status(401).json({
           success: false,
-          error: "Usuário não autenticado.",
+          error: "User not authenticated",
         });
       }
 
@@ -879,7 +879,7 @@ export class PasswordController {
       console.error("Erro ao buscar duplicatas:", error);
       return res.status(500).json({
         success: false,
-        error: "Erro ao buscar senhas duplicadas.",
+        error: "Error loading duplicates",
       });
     }
   }
@@ -897,7 +897,7 @@ export class PasswordController {
       if (!userId) {
         return res.status(401).json({
           success: false,
-          error: "Usuário não autenticado.",
+          error: "User not authenticated",
         });
       }
 
@@ -930,7 +930,7 @@ export class PasswordController {
       console.error("Erro ao buscar senhas fracas:", error);
       return res.status(500).json({
         success: false,
-        error: "Erro ao buscar senhas fracas.",
+        error: "Error loading weak passwords",
       });
     }
   }
@@ -948,7 +948,7 @@ export class PasswordController {
       if (!userId) {
         return res.status(401).json({
           success: false,
-          error: "Usuário não autenticado.",
+          error: "User not authenticated",
         });
       }
 
@@ -984,7 +984,7 @@ export class PasswordController {
       console.error("Erro ao buscar senhas antigas:", error);
       return res.status(500).json({
         success: false,
-        error: "Erro ao buscar senhas antigas.",
+        error: "Error loading old passwords",
       });
     }
   }

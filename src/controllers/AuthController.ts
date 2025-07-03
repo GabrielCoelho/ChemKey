@@ -20,7 +20,7 @@ export class AuthController {
       if (!email || !password) {
         return res.status(400).json({
           success: false,
-          error: "Email e senha são obrigatórios.",
+          error: "Email and passwords are obligatory",
         });
       }
 
@@ -32,7 +32,7 @@ export class AuthController {
       if (!user) {
         return res.status(401).json({
           success: false,
-          error: "Email ou senha incorretos.",
+          error: "Incorrect email or password",
         });
       }
 
@@ -41,7 +41,7 @@ export class AuthController {
       if (!isValidPassword) {
         return res.status(401).json({
           success: false,
-          error: "Email ou senha incorretos.",
+          error: "Incorrect email or password",
         });
       }
 
@@ -69,7 +69,7 @@ export class AuthController {
 
       return res.json({
         success: true,
-        message: "Login realizado com sucesso!",
+        message: "Log in successful",
         redirectUrl: "/app",
         user: {
           id: user.id,
@@ -81,7 +81,7 @@ export class AuthController {
       console.error("Erro no login:", error);
       return res.status(500).json({
         success: false,
-        error: "Erro interno do servidor. Tente novamente.",
+        error: "Internal error. Try again.",
       });
     }
   }
@@ -97,21 +97,21 @@ export class AuthController {
       if (!name || !email || !password || !confirmPassword) {
         return res.status(400).json({
           success: false,
-          error: "Todos os campos são obrigatórios.",
+          error: "All data are obligatory",
         });
       }
 
       if (password !== confirmPassword) {
         return res.status(400).json({
           success: false,
-          error: "As senhas não coincidem.",
+          error: "Passwords are not the same.",
         });
       }
 
       if (password.length < 8) {
         return res.status(400).json({
           success: false,
-          error: "A senha deve ter no mínimo 8 caracteres.",
+          error: "Password must be 8 characters or more",
         });
       }
 
@@ -122,7 +122,7 @@ export class AuthController {
         return res.status(400).json({
           success: false,
           error:
-            "Senha muito fraca. Use letras maiúsculas, minúsculas, números e símbolos.",
+            "Weak Password. Use capital letters, numbers and special characters to increase strength.",
         });
       }
 
@@ -134,7 +134,7 @@ export class AuthController {
       if (existingUser) {
         return res.status(409).json({
           success: false,
-          error: "Este email já está em uso.",
+          error: "Account already registered with this e-mail.",
         });
       }
 
@@ -153,11 +153,11 @@ export class AuthController {
 
       return res.status(201).json({
         success: true,
-        message: "Conta criada com sucesso! Você pode fazer login agora.",
+        message: "Account created. You may log in now...",
         redirectUrl: "/login",
       });
     } catch (error) {
-      console.error("Erro no registro:", error);
+      console.error("Register error: ", error);
 
       // Verificar se é um erro conhecido do Sequelize
       const sequelizeError = error as SequelizeError;
@@ -166,7 +166,7 @@ export class AuthController {
       if (sequelizeError.name === "SequelizeUniqueConstraintError") {
         return res.status(409).json({
           success: false,
-          error: "Este email já está em uso.",
+          error: "E-mail already registered.",
         });
       }
 
@@ -186,7 +186,7 @@ export class AuthController {
 
       return res.status(500).json({
         success: false,
-        error: "Erro interno do servidor. Tente novamente.",
+        error: "Internal error. Try again.",
       });
     }
   }
@@ -200,11 +200,11 @@ export class AuthController {
         // Destruir sessão
         req.session.destroy((err) => {
           if (err) {
-            console.error("Erro ao destruir sessão:", err);
+            console.error("Error destroying session: ", err);
             resolve(
               res.status(500).json({
                 success: false,
-                error: "Erro ao fazer logout.",
+                error: "Error logging out.",
               }),
             );
             return;
@@ -216,7 +216,7 @@ export class AuthController {
           resolve(
             res.json({
               success: true,
-              message: "Logout realizado com sucesso!",
+              message: "Log out successful",
               redirectUrl: "/",
             }),
           );
@@ -226,7 +226,7 @@ export class AuthController {
         resolve(
           res.status(500).json({
             success: false,
-            error: "Erro interno do servidor.",
+            error: "Internal Error",
           }),
         );
       }
@@ -250,10 +250,10 @@ export class AuthController {
         hasMasterKey: !!req.session?.masterKey,
       });
     } catch (error) {
-      console.error("Erro na verificação de auth:", error);
+      console.error("Error on auth: ", error);
       return res.status(500).json({
         success: false,
-        error: "Erro interno do servidor.",
+        error: "Internal error: ",
       });
     }
   }
@@ -272,7 +272,7 @@ export class AuthController {
       if (!userId) {
         return res.status(401).json({
           success: false,
-          error: "Usuário não autenticado.",
+          error: "User not authenticated.",
         });
       }
 
@@ -280,21 +280,21 @@ export class AuthController {
       if (!currentPassword || !newPassword || !confirmNewPassword) {
         return res.status(400).json({
           success: false,
-          error: "Todos os campos são obrigatórios.",
+          error: "All fields are obligatory",
         });
       }
 
       if (newPassword !== confirmNewPassword) {
         return res.status(400).json({
           success: false,
-          error: "As senhas não coincidem.",
+          error: "Passwords are not the same.",
         });
       }
 
       if (newPassword.length < 8) {
         return res.status(400).json({
           success: false,
-          error: "A nova senha deve ter no mínimo 8 caracteres.",
+          error: "New password must be 8 characters or more",
         });
       }
 
@@ -303,7 +303,7 @@ export class AuthController {
       if (!user) {
         return res.status(404).json({
           success: false,
-          error: "Usuário não encontrado.",
+          error: "User not found.",
         });
       }
 
@@ -313,7 +313,7 @@ export class AuthController {
       if (!isValidCurrentPassword) {
         return res.status(400).json({
           success: false,
-          error: "Senha atual incorreta.",
+          error: "Current password doesn't match.",
         });
       }
 
@@ -333,13 +333,13 @@ export class AuthController {
 
       return res.json({
         success: true,
-        message: "Senha alterada com sucesso!",
+        message: "Password changed",
       });
     } catch (error) {
-      console.error("Erro ao alterar senha:", error);
+      console.error("Error updating password", error);
       return res.status(500).json({
         success: false,
-        error: "Erro interno do servidor.",
+        error: "Internal error.",
       });
     }
   }

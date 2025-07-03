@@ -14,7 +14,7 @@ async function initializeApp() {
 
     if (!authStatus.isLoggedIn) {
       // Redirect to login if not authenticated
-      window.location.href = "/login?error=Acesso negado. Faça login primeiro.";
+      window.location.href = "/login?error=Access denied. Please log in first!";
       return;
     }
 
@@ -31,10 +31,7 @@ async function initializeApp() {
     await loadPasswordHealth();
   } catch (error) {
     console.error("Erro na inicialização:", error);
-    showToast(
-      "Erro ao carregar aplicação. Tente fazer login novamente.",
-      "error",
-    );
+    showToast("Something went wrong. Please, log in again", "error");
     setTimeout(() => (window.location.href = "/login"), 2000);
   }
 }
@@ -53,7 +50,7 @@ async function checkAuthentication() {
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Erro na verificação de auth:", error);
+    console.error("Error at auth verification:", error);
     return { isLoggedIn: false, user: null };
   }
 }
@@ -327,7 +324,7 @@ async function loadPasswordsFromAPI() {
 
     if (response.status === 401) {
       window.location.href =
-        "/login?error=Sessão expirada. Faça login novamente.";
+        "/login?error=Session expired! Please, log in again.";
       return [];
     }
 
@@ -340,11 +337,11 @@ async function loadPasswordsFromAPI() {
     if (result.success) {
       return result.passwords || [];
     } else {
-      throw new Error(result.error || "Erro ao carregar senhas");
+      throw new Error(result.error || "Error while loading passwords");
     }
   } catch (error) {
-    console.error("Erro ao carregar senhas:", error);
-    showToast("Erro ao carregar senhas: " + error.message, "error");
+    console.error("Error while loading passwords:", error);
+    showToast("Error loading passwords: " + error.message, "error");
     return [];
   }
 }
@@ -362,7 +359,7 @@ async function savePasswordToAPI(passwordData) {
 
     if (response.status === 401) {
       window.location.href =
-        "/login?error=Sessão expirada. Faça login novamente.";
+        "/login?error=Session expired! Please, log in again";
       return null;
     }
 
@@ -388,7 +385,7 @@ async function deletePasswordFromAPI(passwordId) {
 
     if (response.status === 401) {
       window.location.href =
-        "/login?error=Sessão expirada. Faça login novamente.";
+        "/login?error=Session expired. Please, log in again";
       return false;
     }
 
@@ -418,7 +415,7 @@ async function generatePasswordFromAPI(options = {}) {
 
     if (response.status === 401) {
       window.location.href =
-        "/login?error=Sessão expirada. Faça login novamente.";
+        "/login?error=Session expired! Please, log in again.";
       return null;
     }
 
@@ -460,7 +457,6 @@ async function loadPasswordHealth() {
     }
   } catch (error) {
     console.error("Erro ao carregar health:", error);
-    // Don't show toast on initial load failure, just log
     return null;
   }
 }
@@ -541,7 +537,7 @@ async function loadHealthDetails() {
     } else {
       weakContainer.innerHTML = `
         <div class="alert alert-danger">
-          Erro ao carregar senhas fracas: ${weakData.error}
+          Error loading weak passwords: ${weakData.error}
         </div>`;
     }
   } catch (error) {
@@ -550,7 +546,7 @@ async function loadHealthDetails() {
     if (weakContainer) {
       weakContainer.innerHTML = `
         <div class="alert alert-danger">
-          Erro ao carregar senhas fracas: ${error.message}
+          Error loading weak passwords: ${error.message}
         </div>`;
     }
   }
@@ -600,7 +596,7 @@ async function loadHealthDetails() {
     } else {
       dupContainer.innerHTML = `
         <div class="alert alert-danger">
-          Erro ao carregar senhas duplicadas: ${dupData.error}
+          Error loading duplicates: ${dupData.error}
         </div>`;
     }
   } catch (error) {
@@ -609,7 +605,7 @@ async function loadHealthDetails() {
     if (dupContainer) {
       dupContainer.innerHTML = `
         <div class="alert alert-danger">
-          Erro ao carregar senhas duplicadas: ${error.message}
+          Error loading duplicates: ${error.message}
         </div>`;
     }
   }
@@ -658,7 +654,7 @@ async function loadHealthDetails() {
     } else {
       oldContainer.innerHTML = `
         <div class="alert alert-danger">
-          Erro ao carregar senhas antigas: ${oldData.error}
+          Error loading old passwords: ${oldData.error}
         </div>`;
     }
   } catch (error) {
@@ -667,7 +663,7 @@ async function loadHealthDetails() {
     if (oldContainer) {
       oldContainer.innerHTML = `
         <div class="alert alert-danger">
-          Erro ao carregar senhas antigas: ${error.message}
+          Error loading old passwords: ${error.message}
         </div>`;
     }
   }
@@ -788,7 +784,7 @@ async function initializePasswordList() {
     }
   } catch (error) {
     console.error("Erro ao inicializar lista de senhas:", error);
-    showToast("Erro ao carregar senhas", "error");
+    showToast("Error loading passwords", "error");
   }
 }
 
