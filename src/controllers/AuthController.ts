@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import User from "../entities/User";
-import CryptoService from "../services/CryptoService";
+import Password from "../entities/Password";
+import CryptoService, { EncryptedData } from "../services/CryptoService";
+import sequelize from "../config/index";
 
 // Type for Sequelize errors
 interface SequelizeError extends Error {
@@ -265,19 +267,32 @@ export class AuthController {
     req: Request,
     res: Response,
   ): Promise<Response> {
+    const transaction = await sequelize.transaction();
+
     try {
       const { currentPassword, newPassword, confirmNewPassword } = req.body;
       const userId = req.session?.user?.id;
+      const currentMasterKey = req.session?.masterKey;
 
       if (!userId) {
+        await transaction.rollback();
         return res.status(401).json({
           success: false,
           error: "User not authenticated.",
         });
       }
 
+      if (!currentMasterKey) {
+        await transaction.rollback();
+        return res.status(401).json({
+          success: false,
+          error: "Master key not found. Please log in again.",
+        });
+      }
+
       // Validações
       if (!currentPassword || !newPassword || !confirmNewPassword) {
+        await transaction.rollback();
         return res.status(400).json({
           success: false,
           error: "All fields are obligatory",
@@ -285,6 +300,7 @@ export class AuthController {
       }
 
       if (newPassword !== confirmNewPassword) {
+        await transaction.rollback();
         return res.status(400).json({
           success: false,
           error: "Passwords are not the same.",
@@ -292,6 +308,7 @@ export class AuthController {
       }
 
       if (newPassword.length < 8) {
+        await transaction.rollback();
         return res.status(400).json({
           success: false,
           error: "New password must be 8 characters or more",
@@ -299,8 +316,11 @@ export class AuthController {
       }
 
       // Buscar usuário
-      const user = await User.scope("withSensitiveData").findByPk(userId);
+      const user = await User.scope("withSensitiveData").findByPk(userId, {
+        transaction,
+      });
       if (!user) {
+        await transaction.rollback();
         return res.status(404).json({
           success: false,
           error: "User not found.",
@@ -311,35 +331,152 @@ export class AuthController {
       const isValidCurrentPassword =
         await user.validatePassword(currentPassword);
       if (!isValidCurrentPassword) {
+        await transaction.rollback();
         return res.status(400).json({
           success: false,
           error: "Current password doesn't match.",
         });
       }
 
-      // Gerar nova master key
+      console.log("🔄 Iniciando migração atômica de senhas...");
+
+      // ETAPA 1: Buscar todas as senhas criptografadas do usuário
+      const userPasswords = await Password.findAll({
+        where: { user_id: userId },
+        transaction,
+      });
+
+      console.log(`📊 Encontradas ${userPasswords.length} senhas para migrar`);
+
+      // ETAPA 2: Descriptografar todas as senhas com a master key atual
+      const passwordMigrationData: Array<{
+        passwordRecord: Password;
+        plainPassword: string;
+      }> = [];
+
+      for (const passwordEntry of userPasswords) {
+        try {
+          const encryptedData: EncryptedData = JSON.parse(
+            passwordEntry.encrypted_password,
+          );
+
+          const decryptedPassword = await CryptoService.decryptPassword(
+            encryptedData,
+            currentMasterKey,
+          );
+
+          passwordMigrationData.push({
+            passwordRecord: passwordEntry,
+            plainPassword: decryptedPassword,
+          });
+
+          console.log(`✅ Senha ID ${passwordEntry.id} descriptografada`);
+        } catch (error) {
+          console.error(
+            `❌ Falha ao descriptografar senha ID ${passwordEntry.id}:`,
+            error,
+          );
+
+          await transaction.rollback();
+          return res.status(500).json({
+            success: false,
+            error: `Failed to decrypt existing password (ID: ${passwordEntry.id}). Cannot proceed with password change.`,
+          });
+        }
+      }
+
+      // ETAPA 3: Gerar nova master key
       const { key: newMasterKey } =
         await CryptoService.deriveMasterKey(newPassword);
 
-      // TODO: Re-criptografar todas as senhas salvas com a nova master key
-      // Isso será implementado quando tivermos o PasswordService
+      console.log("🔑 Nova master key gerada");
 
-      // Atualizar senha e master key
-      await user.setPassword(newPassword);
-      await user.setMasterKey(newMasterKey);
+      // ETAPA 4: Atualizar senha do usuário e master key DENTRO DA TRANSAÇÃO
+      try {
+        await user.setPassword(newPassword);
+        await user.setMasterKey(newMasterKey);
+        await user.save({ transaction });
 
-      // Atualizar master key na sessão
+        console.log("✅ Senha do usuário atualizada na transação");
+      } catch (error) {
+        console.error("❌ Falha ao atualizar senha do usuário:", error);
+
+        await transaction.rollback();
+        return res.status(500).json({
+          success: false,
+          error: "Failed to update user password.",
+        });
+      }
+
+      // ETAPA 5: Re-criptografar e salvar todas as senhas DENTRO DA TRANSAÇÃO
+      for (const { passwordRecord, plainPassword } of passwordMigrationData) {
+        try {
+          // Re-criptografar com nova master key
+          const newEncryptedData = await CryptoService.encryptPassword(
+            plainPassword,
+            newMasterKey,
+          );
+
+          // Recalcular força da senha
+          const newStrength =
+            CryptoService.calculatePasswordStrength(plainPassword);
+
+          // Atualizar registro na transação
+          await passwordRecord.update(
+            {
+              encrypted_password: JSON.stringify(newEncryptedData),
+              strength: newStrength,
+            },
+            { transaction },
+          );
+
+          console.log(
+            `🔒 Senha ID ${passwordRecord.id} re-criptografada e salva`,
+          );
+        } catch (error) {
+          console.error(
+            `❌ Falha ao migrar senha ID ${passwordRecord.id}:`,
+            error,
+          );
+
+          await transaction.rollback();
+          return res.status(500).json({
+            success: false,
+            error: `Failed to migrate password (ID: ${passwordRecord.id}). All changes have been rolled back.`,
+          });
+        }
+      }
+
+      // ETAPA 6: Commit da transação (tudo ou nada)
+      await transaction.commit();
+      console.log("💾 Transação commitada com sucesso!");
+
+      // ETAPA 7: Atualizar master key na sessão APÓS commit bem-sucedido
       req.session.masterKey = newMasterKey;
+
+      console.log("🎉 Migração atômica de senhas concluída com sucesso!");
 
       return res.json({
         success: true,
-        message: "Password changed",
+        message:
+          "Password changed successfully. All saved passwords have been securely migrated to the new encryption key.",
+        migratedPasswords: passwordMigrationData.length,
+        details: {
+          userPasswordUpdated: true,
+          masterKeyRotated: true,
+          passwordsMigrated: passwordMigrationData.length,
+        },
       });
     } catch (error) {
-      console.error("Error updating password", error);
+      // Garantir rollback em caso de qualquer erro não tratado
+      await transaction.rollback();
+
+      console.error("❌ Erro crítico na migração de senhas:", error);
       return res.status(500).json({
         success: false,
-        error: "Internal error.",
+        error:
+          "Critical error during password migration. All changes have been rolled back.",
+        details: "Please try again or contact support if the problem persists.",
       });
     }
   }

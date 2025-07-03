@@ -766,6 +766,335 @@
       </div>
     </div>
 
+    <!-- Change User Password Modal -->
+    <div
+      class="modal fade"
+      id="changeUserPasswordModal"
+      tabindex="-1"
+      aria-labelledby="changeUserPasswordModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="changeUserPasswordModalLabel">
+              <i class="fa fa-lock me-2"></i>Change Account Password
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <!-- Security Warning -->
+            <div class="alert alert-warning" role="alert">
+              <i class="fa fa-exclamation-triangle me-2"></i>
+              <strong>Security Notice:</strong> Changing your account password will update your master encryption key. Make sure to remember your new password as it cannot be recovered.
+            </div>
+
+            <form id="change-user-password-form">
+              <div class="mb-3">
+                <label for="current-user-password" class="form-label">
+                  <i class="fa fa-key me-1"></i>Current Password *
+                </label>
+                <div class="input-group">
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="current-user-password"
+                    placeholder="Enter your current password"
+                    required
+                    autocomplete="current-password"
+                  />
+                  <button
+                    class="btn btn-outline-secondary toggle-password"
+                    type="button"
+                    title="Show/Hide Password"
+                  >
+                    <i class="fa fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="new-user-password" class="form-label">
+                  <i class="fa fa-lock me-1"></i>New Password *
+                </label>
+                <div class="input-group">
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="new-user-password"
+                    placeholder="Enter your new password"
+                    required
+                    autocomplete="new-password"
+                    minlength="8"
+                  />
+                  <button
+                    class="btn btn-outline-secondary toggle-password"
+                    type="button"
+                    title="Show/Hide Password"
+                  >
+                    <i class="fa fa-eye"></i>
+                  </button>
+                </div>
+                <div class="form-text">
+                  Password must be at least 8 characters long and include uppercase, lowercase, numbers and special characters for better security.
+                </div>
+
+                <!-- Password Strength Indicator -->
+                <div id="new-user-password-strength-indicator" class="mt-2 d-none">
+                  <div class="d-flex justify-content-between small">
+                    <span>Password Strength:</span>
+                    <span id="new-user-password-strength-text">-</span>
+                  </div>
+                  <div class="progress" style="height: 4px;">
+                    <div id="new-user-password-strength-bar" class="progress-bar" style="width: 0%"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="confirm-new-user-password" class="form-label">
+                  <i class="fa fa-check me-1"></i>Confirm New Password *
+                </label>
+                <div class="input-group">
+                  <input
+                    type="password"
+                    class="form-control"
+                    id="confirm-new-user-password"
+                    placeholder="Confirm your new password"
+                    required
+                    autocomplete="new-password"
+                  />
+                  <button
+                    class="btn btn-outline-secondary toggle-password"
+                    type="button"
+                    title="Show/Hide Password"
+                  >
+                    <i class="fa fa-eye"></i>
+                  </button>
+                </div>
+                <div id="password-match-feedback" class="form-text"></div>
+              </div>
+
+              <!-- Generate Strong Password Option -->
+              <div class="mb-3">
+                <div class="d-grid">
+                  <button
+                    type="button"
+                    class="btn btn-outline-primary"
+                    id="generate-user-password"
+                  >
+                    <i class="fa fa-random me-2"></i> Generate Strong Password
+                  </button>
+                </div>
+              </div>
+            </form>
+
+            <!-- Additional Security Info -->
+            <div class="alert alert-info" role="alert">
+              <i class="fa fa-info-circle me-2"></i>
+              <strong>What happens when you change your password:</strong>
+              <ul class="mb-0 mt-2">
+                <li>Your account password will be updated</li>
+                <li>A new master encryption key will be generated</li>
+                <li>You'll need to use the new password for future logins</li>
+                <li>All your saved passwords remain secure and accessible</li>
+              </ul>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              <i class="fa fa-times me-1"></i> Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="save-new-user-password">
+              <span class="btn-content">
+                <i class="fa fa-save me-1"></i> Change Password
+              </span>
+              <span class="btn-loading d-none">
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                Changing...
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit password modal -->
+    <div
+      class="modal fade"
+      id="editPasswordModal"
+      tabindex="-1"
+      aria-labelledby="editPasswordModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editPasswordModalLabel">
+              <i class="fa fa-pencil me-2"></i>Edit Password
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="edit-password-form">
+              <!-- Hidden field para ID -->
+              <input type="hidden" id="edit-password-id" />
+
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="edit-website" class="form-label">
+                    <i class="fa fa-globe me-1"></i>Website URL *
+                  </label>
+                  <input
+                    type="url"
+                    class="form-control"
+                    id="edit-website"
+                    placeholder="https://example.com"
+                    required
+                  />
+                  <div class="form-text">Include https:// for best results</div>
+                </div>
+                <div class="col-md-6">
+                  <label for="edit-category" class="form-label">
+                    <i class="fa fa-tag me-1"></i>Category
+                  </label>
+                  <select class="form-select" id="edit-category">
+                    <option value="social">Social Media</option>
+                    <option value="work">Work</option>
+                    <option value="financial">Financial</option>
+                    <option value="email">Email</option>
+                    <option value="entertainment">Entertainment</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label for="edit-username" class="form-label">
+                    <i class="fa fa-user me-1"></i>Username/Email *
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="edit-username"
+                    placeholder="username or email@example.com"
+                    required
+                  />
+                </div>
+                <div class="col-12">
+                  <label for="edit-password" class="form-label">
+                    <i class="fa fa-lock me-1"></i>Password *
+                  </label>
+                  <div class="input-group">
+                    <input
+                      type="password"
+                      class="form-control"
+                      id="edit-password"
+                      required
+                      placeholder="Enter password or generate new one"
+                    />
+                    <button
+                      class="btn btn-outline-secondary toggle-password"
+                      type="button"
+                      title="Show/Hide Password"
+                    >
+                      <i class="fa fa-eye"></i>
+                    </button>
+                  </div>
+                  <div id="edit-password-strength-indicator" class="mt-2 d-none">
+                    <div class="d-flex justify-content-between small">
+                      <span>Password Strength:</span>
+                      <span id="edit-password-strength-text">-</span>
+                    </div>
+                    <div class="progress" style="height: 4px;">
+                      <div id="edit-password-strength-bar" class="progress-bar" style="width: 0%"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <div class="d-grid gap-2">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      id="edit-generate-password"
+                    >
+                      <i class="fa fa-random me-2"></i> Generate New Password
+                    </button>
+                  </div>
+                </div>
+                <div class="col-12">
+                  <label for="edit-notes" class="form-label">
+                    <i class="fa fa-sticky-note me-1"></i>Notes (Optional)
+                  </label>
+                  <textarea
+                    class="form-control"
+                    id="edit-notes"
+                    rows="3"
+                    placeholder="Security questions, recovery codes, etc."
+                  ></textarea>
+                </div>
+                <div class="col-12">
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="checkbox"
+                      id="edit-favorite"
+                    />
+                    <label class="form-check-label" for="edit-favorite">
+                      <i class="fa fa-star me-1"></i> Mark as favorite
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </form>
+
+            <!-- Alert para mudanças de senha -->
+            <div class="alert alert-info mt-3 d-none" id="password-change-alert">
+              <i class="fa fa-info-circle me-2"></i>
+              <strong>Security Notice:</strong> If you change the password, it will be re-encrypted with your current master key.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              <i class="fa fa-times me-1"></i> Cancel
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger me-2"
+              id="delete-password-modal"
+            >
+              <i class="fa fa-trash me-1"></i> Delete
+            </button>
+            <button type="button" class="btn btn-primary" id="update-password">
+              <span class="btn-content">
+                <i class="fa fa-save me-1"></i> Update Password
+              </span>
+              <span class="btn-loading d-none">
+                <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+                Updating...
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Password Generator Modal -->
     <div
       class="modal fade"

@@ -187,6 +187,8 @@ function initializeEventListeners() {
 
   // Other functionality placeholders
   setupPlaceholderFunctionality();
+
+  setupEditPasswordModal();
 }
 
 function setupStandaloneGenerator() {
@@ -483,6 +485,255 @@ function updateHealthDisplay(health) {
     healthWeakCount.textContent = health.weakPasswords;
     healthDuplicateCount.textContent = health.duplicatePasswords;
     healthOldCount.textContent = health.oldPasswords;
+  }
+}
+
+async function loadPasswordForEdit(passwordId) {
+  try {
+    const response = await fetch(`/passwords/${passwordId}`, {
+      method: "GET",
+      credentials: "include",
+    });
+
+    if (response.status === 401) {
+      window.location.href =
+        "/login?error=Session expired. Please log in again.";
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success) {
+      populateEditModal(result.password);
+    } else {
+      throw new Error(result.error || "Error loading password");
+    }
+  } catch (error) {
+    console.error("Error loading password:", error);
+    throw error;
+  }
+}
+
+function populateEditModal(password) {
+  document.getElementById("edit-password-id").value = password.id;
+  document.getElementById("edit-website").value = password.website;
+  document.getElementById("edit-username").value = password.username;
+  document.getElementById("edit-password").value = password.password;
+  document.getElementById("edit-category").value = password.category;
+  document.getElementById("edit-notes").value = password.notes || "";
+  document.getElementById("edit-favorite").checked = password.favorite;
+
+  // Atualizar indicador de força da senha
+  const event = new Event("input");
+  document.getElementById("edit-password").dispatchEvent(event);
+
+  // Esconder alerta de mudança de senha
+  const alert = document.getElementById("password-change-alert");
+  if (alert) {
+    alert.classList.add("d-none");
+  }
+}
+
+async function updatePassword() {
+  const passwordId = document.getElementById("edit-password-id").value;
+  const website = document.getElementById("edit-website").value;
+  const username = document.getElementById("edit-username").value;
+  const password = document.getElementById("edit-password").value;
+  const category = document.getElementById("edit-category").value;
+  const notes = document.getElementById("edit-notes").value;
+  const favorite = document.getElementById("edit-favorite").checked;
+
+  if (!website || !username || !password) {
+    showToast("Please fill out all required fields.", "error");
+    return;
+  }
+
+  // Show loading state
+  const updateBtn = document.getElementById("update-password");
+  const btnContent = updateBtn.querySelector(".btn-content");
+  const btnLoading = updateBtn.querySelector(".btn-loading");
+
+  btnContent.classList.add("d-none");
+  btnLoading.classList.remove("d-none");
+  updateBtn.disabled = true;
+
+  try {
+    const passwordData = {
+      website: website.trim(),
+      username: username.trim(),
+      password: password,
+      category: category || "other",
+      notes: notes?.trim() || "",
+      favorite: favorite,
+    };
+
+    const response = await fetch(`/passwords/${passwordId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(passwordData),
+    });
+
+    if (response.status === 401) {
+      window.location.href =
+        "/login?error=Session expired. Please log in again.";
+      return;
+    }
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || `HTTP ${response.status}`);
+    }
+
+    if (result.success) {
+      showToast("Password updated successfully!");
+
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("editPasswordModal"),
+      );
+      modal.hide();
+
+      await initializePasswordList();
+      await loadPasswordHealth();
+    }
+  } catch (error) {
+    console.error("Error updating password:", error);
+    showToast("Error updating password: " + error.message, "error");
+  } finally {
+    btnContent.classList.remove("d-none");
+    btnLoading.classList.add("d-none");
+    updateBtn.disabled = false;
+  }
+}
+
+async function deletePasswordFromModal() {
+  const passwordId = document.getElementById("edit-password-id").value;
+
+  if (!confirm("Are you sure you want to delete this password?")) {
+    return;
+  }
+
+  try {
+    const success = await deletePasswordFromAPI(passwordId);
+
+    if (success) {
+      showToast("Password deleted successfully!");
+
+      const modal = bootstrap.Modal.getInstance(
+        document.getElementById("editPasswordModal"),
+      );
+      modal.hide();
+
+      await initializePasswordList();
+      await loadPasswordHealth();
+    }
+  } catch (error) {
+    console.error("Error deleting password:", error);
+    showToast("Error deleting password: " + error.message, "error");
+  }
+}
+
+function setupEditPasswordModal() {
+  const updateBtn = document.getElementById("update-password");
+  if (updateBtn) {
+    updateBtn.addEventListener("click", updatePassword);
+  }
+
+  const deleteBtn = document.getElementById("delete-password-modal");
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", deletePasswordFromModal);
+  }
+
+  const editGenerateBtn = document.getElementById("edit-generate-password");
+  if (editGenerateBtn) {
+    editGenerateBtn.addEventListener("click", function () {
+      const passwordGeneratorModal = new bootstrap.Modal(
+        document.getElementById("passwordGeneratorModal"),
+      );
+
+      document.getElementById("passwordGeneratorModal").dataset.editMode =
+        "true";
+      passwordGeneratorModal.show();
+      generatePassword();
+    });
+  }
+
+  const editToggleBtn = document.querySelector(
+    "#editPasswordModal .toggle-password",
+  );
+  if (editToggleBtn) {
+    editToggleBtn.addEventListener("click", togglePasswordVisibility);
+  }
+
+  setupEditPasswordStrengthIndicator();
+
+  // Alerta de mudança de senha
+  const editPasswordInput = document.getElementById("edit-password");
+  if (editPasswordInput) {
+    let originalPassword = "";
+
+    document
+      .getElementById("editPasswordModal")
+      .addEventListener("shown.bs.modal", function () {
+        originalPassword = editPasswordInput.value;
+      });
+
+    editPasswordInput.addEventListener("input", function () {
+      const alert = document.getElementById("password-change-alert");
+      if (alert && this.value !== originalPassword) {
+        alert.classList.remove("d-none");
+      } else if (alert) {
+        alert.classList.add("d-none");
+      }
+    });
+  }
+}
+
+function setupEditPasswordStrengthIndicator() {
+  const editPasswordInput = document.getElementById("edit-password");
+  const editStrengthIndicator = document.getElementById(
+    "edit-password-strength-indicator",
+  );
+  const editStrengthBar = document.getElementById("edit-password-strength-bar");
+  const editStrengthText = document.getElementById(
+    "edit-password-strength-text",
+  );
+
+  if (editPasswordInput) {
+    editPasswordInput.addEventListener("input", function () {
+      const password = this.value;
+
+      if (password.length === 0) {
+        editStrengthIndicator.classList.add("d-none");
+        return;
+      }
+
+      editStrengthIndicator.classList.remove("d-none");
+
+      const strength = calculatePasswordStrength(password);
+      const percentage = (strength / 5) * 100;
+
+      editStrengthBar.style.width = percentage + "%";
+      editStrengthBar.className = "progress-bar";
+
+      if (strength >= 4) {
+        editStrengthBar.classList.add("bg-success");
+        editStrengthText.textContent = "Strong";
+      } else if (strength >= 2) {
+        editStrengthBar.classList.add("bg-warning");
+        editStrengthText.textContent = "Medium";
+      } else {
+        editStrengthBar.classList.add("bg-danger");
+        editStrengthText.textContent = "Weak";
+      }
+    });
   }
 }
 
@@ -936,16 +1187,32 @@ function generatePasswordLocal(options) {
 
 function useGeneratedPassword() {
   const generatedPassword = document.getElementById("generated-password").value;
-  document.getElementById("password").value = generatedPassword;
+  const modal = document.getElementById("passwordGeneratorModal");
 
-  // Trigger strength indicator update
-  const event = new Event("input");
-  document.getElementById("password").dispatchEvent(event);
+  // Verificar se estamos em modo de edição
+  if (modal.dataset.editMode === "true") {
+    document.getElementById("edit-password").value = generatedPassword;
 
-  const modal = bootstrap.Modal.getInstance(
+    // Trigger strength indicator update para edit modal
+    const event = new Event("input");
+    document.getElementById("edit-password").dispatchEvent(event);
+
+    // Limpar flag de modo de edição
+    delete modal.dataset.editMode;
+  } else {
+    // Modo normal - modal de adicionar
+    document.getElementById("password").value = generatedPassword;
+
+    // Trigger strength indicator update para add modal
+    const event = new Event("input");
+    document.getElementById("password").dispatchEvent(event);
+  }
+
+  // Fechar modal do gerador
+  const generatorModal = bootstrap.Modal.getInstance(
     document.getElementById("passwordGeneratorModal"),
   );
-  modal.hide();
+  generatorModal.hide();
 }
 
 // =============================================================================
@@ -990,11 +1257,25 @@ function copyToClipboard(text) {
   document.body.removeChild(textarea);
 }
 
-function editPassword(event) {
+async function editPassword(event) {
   const row = event.currentTarget.closest("tr");
   const passwordId = row.dataset.id;
 
-  showToast("Edit functionality coming soon!", "info");
+  if (!passwordId) {
+    showToast("Password ID not found", "error");
+    return;
+  }
+
+  try {
+    await loadPasswordForEdit(passwordId);
+    const editModal = new bootstrap.Modal(
+      document.getElementById("editPasswordModal"),
+    );
+    editModal.show();
+  } catch (error) {
+    console.error("Error loading password for edit:", error);
+    showToast("Error loading password: " + error.message, "error");
+  }
 }
 
 // =============================================================================
