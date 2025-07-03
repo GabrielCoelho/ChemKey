@@ -12,6 +12,7 @@ interface ValidationError {
 export class ValidationMiddleware {
   /**
    * Middleware genérico para processar resultados de validação
+   * VERSÃO MELHORADA COM MENSAGENS ESPECÍFICAS
    */
   public static handleValidationErrors(
     req: Request,
@@ -35,9 +36,13 @@ export class ValidationMiddleware {
         console.log("📋 Request body:", req.body);
       }
 
+      // MELHORADO: Criar mensagem específica baseada nos erros
+      const errorMessages = formattedErrors.map((err) => err.message);
+      const specificErrorMessage = errorMessages.join(", ");
+
       res.status(400).json({
         success: false,
-        error: "Dados inválidos fornecidos.",
+        error: `Invalid data: ${specificErrorMessage}`,
         details: formattedErrors,
         timestamp: new Date().toISOString(),
       });
@@ -55,14 +60,14 @@ export class ValidationMiddleware {
   }
 
   /**
-   * Validações para autenticação - FLEXIBILIZADAS PARA DEMO
+   * Validações para autenticação - MELHORADAS COM MENSAGENS ESPECÍFICAS
    */
   public static validateLogin = [
     body("email")
       .isLength({ min: 1 })
-      .withMessage("Email é obrigatório")
+      .withMessage("Email is required")
       .isLength({ max: 255 })
-      .withMessage("Email deve ter no máximo 255 caracteres")
+      .withMessage("Email must be at most 255 characters")
       // Validação flexível: aceita email simples ou formato completo
       .custom((value) => {
         // Aceita tanto "teste@teste" quanto "teste@teste.com"
@@ -73,16 +78,16 @@ export class ValidationMiddleware {
           return true;
         }
         throw new Error(
-          "Email deve ter formato válido (ex: user@domain ou user@domain.com)",
+          "Email must have valid format (ex: user@domain or user@domain.com)",
         );
       })
       .customSanitizer((value) => value.toLowerCase().trim()),
 
     body("password")
       .isLength({ min: 1 })
-      .withMessage("Senha é obrigatória")
+      .withMessage("Password is required")
       .isLength({ max: 128 })
-      .withMessage("Senha deve ter no máximo 128 caracteres"),
+      .withMessage("Password must be at most 128 characters"),
 
     ValidationMiddleware.handleValidationErrors,
   ];
@@ -90,16 +95,16 @@ export class ValidationMiddleware {
   public static validateRegister = [
     body("name")
       .isLength({ min: 2, max: 100 })
-      .withMessage("Nome deve ter entre 2 e 100 caracteres")
+      .withMessage("Name must be between 2 and 100 characters")
       .matches(/^[a-zA-ZÀ-ÿ\s]+$/)
-      .withMessage("Nome deve conter apenas letras e espaços")
+      .withMessage("Name must contain only letters and spaces")
       .customSanitizer((value) => ValidationMiddleware.sanitizeString(value)),
 
     body("email")
       .isLength({ min: 1 })
-      .withMessage("Email é obrigatório")
+      .withMessage("Email is required")
       .isLength({ max: 255 })
-      .withMessage("Email deve ter no máximo 255 caracteres")
+      .withMessage("Email must be at most 255 characters")
       // Validação flexível: aceita email simples ou formato completo
       .custom((value) => {
         const simpleEmailRegex = /^[^@\s]+@[^@\s]+$/;
@@ -109,12 +114,12 @@ export class ValidationMiddleware {
           return true;
         }
         throw new Error(
-          "Email deve ter formato válido (ex: user@domain ou user@domain.com)",
+          "Email must have valid format (ex: user@domain or user@domain.com)",
         );
       })
       .customSanitizer((value) => value.toLowerCase().trim()),
 
-    // VALIDAÇÃO DE SENHA FLEXIBILIZADA PARA DEMO ACADÊMICA
+    // VALIDAÇÃO DE SENHA MELHORADA COM MENSAGENS ESPECÍFICAS
     body("password")
       .custom((value, { req }) => {
         // Para demo acadêmica: aceitar senhas simples como "teste"
@@ -124,30 +129,30 @@ export class ValidationMiddleware {
         ) {
           // Requisitos mínimos para demo
           if (value.length < 3) {
-            throw new Error("Senha deve ter no mínimo 3 caracteres para demo");
+            throw new Error("Password must be at least 3 characters for demo");
           }
           return true;
         }
 
         // Para produção: manter requisitos de segurança
         if (value.length < 8) {
-          throw new Error("Senha deve ter no mínimo 8 caracteres");
+          throw new Error("Password must be at least 8 characters long");
         }
 
         if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
           throw new Error(
-            "Senha deve conter ao menos: 1 minúscula, 1 maiúscula, 1 número",
+            "Password must contain at least: 1 lowercase letter, 1 uppercase letter, 1 number",
           );
         }
 
         return true;
       })
       .isLength({ max: 128 })
-      .withMessage("Senha deve ter no máximo 128 caracteres"),
+      .withMessage("Password must be at most 128 characters"),
 
     body("confirmPassword").custom((value, { req }) => {
       if (value !== req.body.password) {
-        throw new Error("Confirmação de senha não confere");
+        throw new Error("Password confirmation does not match");
       }
       return true;
     }),
@@ -158,7 +163,7 @@ export class ValidationMiddleware {
   public static validateChangePassword = [
     body("currentPassword")
       .isLength({ min: 1 })
-      .withMessage("Senha atual é obrigatória"),
+      .withMessage("Current password is required"),
 
     // Mesma lógica flexível para mudança de senha
     body("newPassword")
@@ -169,30 +174,30 @@ export class ValidationMiddleware {
         ) {
           if (value.length < 3) {
             throw new Error(
-              "Nova senha deve ter no mínimo 3 caracteres para demo",
+              "New password must be at least 3 characters for demo",
             );
           }
           return true;
         }
 
         if (value.length < 8) {
-          throw new Error("Nova senha deve ter no mínimo 8 caracteres");
+          throw new Error("New password must be at least 8 characters long");
         }
 
         if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
           throw new Error(
-            "Nova senha deve conter ao menos: 1 minúscula, 1 maiúscula, 1 número",
+            "New password must contain at least: 1 lowercase letter, 1 uppercase letter, 1 number",
           );
         }
 
         return true;
       })
       .isLength({ max: 128 })
-      .withMessage("Nova senha deve ter no máximo 128 caracteres"),
+      .withMessage("New password must be at most 128 characters"),
 
     body("confirmNewPassword").custom((value, { req }) => {
       if (value !== req.body.newPassword) {
-        throw new Error("Confirmação da nova senha não confere");
+        throw new Error("New password confirmation does not match");
       }
       return true;
     }),
@@ -201,32 +206,32 @@ export class ValidationMiddleware {
   ];
 
   /**
-   * Validações para senhas - mantidas como estavam
+   * Validações para senhas - MELHORADAS
    */
   public static validateCreatePassword = [
     body("website")
       .isLength({ min: 1, max: 255 })
-      .withMessage("Website deve ter entre 1 e 255 caracteres")
+      .withMessage("Website must be between 1 and 255 characters")
       .customSanitizer((value) => ValidationMiddleware.sanitizeString(value)),
 
     body("username")
       .isLength({ min: 1, max: 255 })
-      .withMessage("Username deve ter entre 1 e 255 caracteres")
+      .withMessage("Username must be between 1 and 255 characters")
       .customSanitizer((value) => ValidationMiddleware.sanitizeString(value)),
 
     body("password")
       .isLength({ min: 1, max: 1000 })
-      .withMessage("Password deve ter entre 1 e 1000 caracteres"),
+      .withMessage("Password must be between 1 and 1000 characters"),
 
     body("category")
       .optional()
       .isIn(["social", "work", "financial", "email", "entertainment", "other"])
-      .withMessage("Categoria deve ser uma das opções válidas"),
+      .withMessage("Category must be one of the valid options"),
 
     body("notes")
       .optional()
       .isLength({ max: 1000 })
-      .withMessage("Notas devem ter no máximo 1000 caracteres")
+      .withMessage("Notes must be at most 1000 characters")
       .customSanitizer((value) =>
         value ? ValidationMiddleware.sanitizeString(value) : "",
       ),
@@ -235,36 +240,34 @@ export class ValidationMiddleware {
   ];
 
   public static validateUpdatePassword = [
-    param("id")
-      .isInt({ min: 1 })
-      .withMessage("ID deve ser um número inteiro positivo"),
+    param("id").isInt({ min: 1 }).withMessage("ID must be a positive integer"),
 
     body("website")
       .optional()
       .isLength({ min: 1, max: 255 })
-      .withMessage("Website deve ter entre 1 e 255 caracteres")
+      .withMessage("Website must be between 1 and 255 characters")
       .customSanitizer((value) => ValidationMiddleware.sanitizeString(value)),
 
     body("username")
       .optional()
       .isLength({ min: 1, max: 255 })
-      .withMessage("Username deve ter entre 1 e 255 caracteres")
+      .withMessage("Username must be between 1 and 255 characters")
       .customSanitizer((value) => ValidationMiddleware.sanitizeString(value)),
 
     body("password")
       .optional()
       .isLength({ min: 1, max: 1000 })
-      .withMessage("Password deve ter entre 1 e 1000 caracteres"),
+      .withMessage("Password must be between 1 and 1000 characters"),
 
     body("category")
       .optional()
       .isIn(["social", "work", "financial", "email", "entertainment", "other"])
-      .withMessage("Categoria deve ser uma das opções válidas"),
+      .withMessage("Category must be one of the valid options"),
 
     body("notes")
       .optional()
       .isLength({ max: 1000 })
-      .withMessage("Notas devem ter no máximo 1000 caracteres")
+      .withMessage("Notes must be at most 1000 characters")
       .customSanitizer((value) =>
         value ? ValidationMiddleware.sanitizeString(value) : "",
       ),
@@ -272,15 +275,13 @@ export class ValidationMiddleware {
     body("favorite")
       .optional()
       .isBoolean()
-      .withMessage("Favorite deve ser um valor booleano"),
+      .withMessage("Favorite must be a boolean value"),
 
     ValidationMiddleware.handleValidationErrors,
   ];
 
   public static validatePasswordId = [
-    param("id")
-      .isInt({ min: 1 })
-      .withMessage("ID deve ser um número inteiro positivo"),
+    param("id").isInt({ min: 1 }).withMessage("ID must be a positive integer"),
 
     ValidationMiddleware.handleValidationErrors,
   ];
@@ -289,32 +290,32 @@ export class ValidationMiddleware {
     body("length")
       .optional()
       .isInt({ min: 6, max: 64 })
-      .withMessage("Comprimento deve estar entre 6 e 64 caracteres"),
+      .withMessage("Length must be between 6 and 64 characters"),
 
     body("includeUppercase")
       .optional()
       .isBoolean()
-      .withMessage("includeUppercase deve ser um valor booleano"),
+      .withMessage("includeUppercase must be a boolean value"),
 
     body("includeLowercase")
       .optional()
       .isBoolean()
-      .withMessage("includeLowercase deve ser um valor booleano"),
+      .withMessage("includeLowercase must be a boolean value"),
 
     body("includeNumbers")
       .optional()
       .isBoolean()
-      .withMessage("includeNumbers deve ser um valor booleano"),
+      .withMessage("includeNumbers must be a boolean value"),
 
     body("includeSymbols")
       .optional()
       .isBoolean()
-      .withMessage("includeSymbols deve ser um valor booleano"),
+      .withMessage("includeSymbols must be a boolean value"),
 
     body("excludeAmbiguous")
       .optional()
       .isBoolean()
-      .withMessage("excludeAmbiguous deve ser um valor booleano"),
+      .withMessage("excludeAmbiguous must be a boolean value"),
 
     // Validação customizada para garantir ao menos um tipo de caractere
     body().custom((value) => {
@@ -345,7 +346,7 @@ export class ValidationMiddleware {
         return true;
       }
 
-      throw new Error("Pelo menos um tipo de caractere deve ser incluído");
+      throw new Error("At least one character type must be included");
     }),
 
     ValidationMiddleware.handleValidationErrors,
@@ -359,7 +360,7 @@ export class ValidationMiddleware {
     max: process.env.NODE_ENV === "development" ? 50 : 5, // 50 tentativas em dev, 5 em prod
     message: {
       success: false,
-      error: "Muitas tentativas de login. Tente novamente em alguns minutos.",
+      error: "Too many login attempts. Please try again in a few minutes.",
     },
     standardHeaders: true,
     legacyHeaders: false,
@@ -371,7 +372,7 @@ export class ValidationMiddleware {
     max: process.env.NODE_ENV === "development" ? 20 : 3, // 20 registros em dev, 3 em prod
     message: {
       success: false,
-      error: "Muitas tentativas de registro. Tente novamente em 1 hora.",
+      error: "Too many registration attempts. Please try again in 1 hour.",
     },
     standardHeaders: true,
     legacyHeaders: false,
@@ -382,7 +383,7 @@ export class ValidationMiddleware {
     max: process.env.NODE_ENV === "development" ? 100 : 20, // 100 gerações em dev, 20 em prod
     message: {
       success: false,
-      error: "Muitas gerações de senha. Tente novamente em 1 minuto.",
+      error: "Too many password generations. Please try again in 1 minute.",
     },
     standardHeaders: true,
     legacyHeaders: false,
@@ -446,7 +447,7 @@ export class ValidationMiddleware {
       res.status(400).json({
         success: false,
         error:
-          "Content-Type deve ser application/json ou application/x-www-form-urlencoded",
+          "Content-Type must be application/json or application/x-www-form-urlencoded",
       });
       return;
     }
@@ -464,7 +465,7 @@ export class ValidationMiddleware {
       if (contentLength && parseInt(contentLength) > maxSize) {
         res.status(413).json({
           success: false,
-          error: `Payload muito grande. Máximo permitido: ${maxSize} bytes`,
+          error: `Payload too large. Maximum allowed: ${maxSize} bytes`,
         });
         return;
       }
